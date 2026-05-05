@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html, body, #root {
+    @apply h-full w-full m-0 p-0;
+  }
+
+  body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer utilities {
+  .mirror { transform: scaleX(-1); }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* Zoom-style toolbar button */
+  .ctrl-btn {
+    @apply flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-[#d1d1d1]
+           hover:bg-white/10 active:bg-white/20 transition-colors duration-150 cursor-pointer select-none;
+    min-width: 64px;
+  }
+  .ctrl-btn .icon { @apply text-2xl; }
+  .ctrl-btn .label { @apply text-[11px] leading-none whitespace-nowrap; }
+  .ctrl-btn.active-green .icon,
+  .ctrl-btn.active-green .label { @apply text-[#4ade80]; }
+  .ctrl-btn.muted .icon { @apply text-[#f87171]; }
+
+  /* Zoom-style name badge */
+  .name-badge {
+    @apply absolute bottom-2 left-2 flex items-center gap-1.5
+           bg-black/60 backdrop-blur-sm rounded px-2 py-0.5
+           text-xs text-white font-medium;
+  }
+
+  /* Participant strip tile */
+  .participant-tile {
+    @apply relative flex-shrink-0 rounded overflow-hidden bg-[#2d2d2d] cursor-pointer;
+    border: 2px solid transparent;
+  }
+  .participant-tile.speaking {
+    border-color: #22c55e;
+  }
+}
