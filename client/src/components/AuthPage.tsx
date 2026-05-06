@@ -5,9 +5,12 @@ import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import type { MatchProfile } from "../types";
 
 type Mode = "sign-in" | "sign-up";
+type SignupProfile = {
+  gender: "" | MatchProfile["gender"];
+  country: "" | MatchProfile["country"];
+};
 
 const pendingEmailKey = "randomchat:pending-email";
-const pendingProfileKey = "randomchat:pending-profile";
 const signupSuccessKey = "randomchat:signup-success-pending";
 
 function getRedirectUrl() {
@@ -18,7 +21,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState<Mode>("sign-up");
   const [email, setEmail] = useState(() => localStorage.getItem(pendingEmailKey) || "");
   const [password, setPassword] = useState("");
-  const [profile, setProfile] = useState<MatchProfile>({ gender: "male", country: "FR" });
+  const [profile, setProfile] = useState<SignupProfile>({ gender: "", country: "" });
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -44,6 +47,11 @@ export default function AuthPage() {
 
     if (!supabase) {
       setError("Supabase n'est pas encore configuré.");
+      return;
+    }
+
+    if (isSignUp && (!profile.gender || !profile.country)) {
+      setError("Renseigne ton sexe et ton pays pour créer ton compte.");
       return;
     }
 
@@ -90,19 +98,11 @@ export default function AuthPage() {
     }
 
     setLoading(true);
-    localStorage.setItem(pendingProfileKey, JSON.stringify(profile));
-    if (isSignUp) {
-      localStorage.setItem(signupSuccessKey, "true");
-    }
 
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: redirectUrl,
-        queryParams: {
-          gender: profile.gender,
-          country: profile.country,
-        },
       },
     });
 
@@ -152,45 +152,51 @@ export default function AuthPage() {
           </button>
         </div>
 
-        <div className="mb-5 grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-[#1e1e1e] p-3">
-          <SelectField
-            label="Je suis"
-            value={profile.gender}
-            onChange={(value) =>
-              setProfile((current) => ({ ...current, gender: value as MatchProfile["gender"] }))
-            }
-            options={PROFILE_GENDERS}
-          />
-          <SelectField
-            label="Mon pays"
-            value={profile.country}
-            onChange={(value) =>
-              setProfile((current) => ({ ...current, country: value as MatchProfile["country"] }))
-            }
-            options={PROFILE_COUNTRIES}
-          />
-        </div>
+        {isSignUp ? (
+          <div className="mb-5 grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-[#1e1e1e] p-3">
+            <SelectField
+              label="Je suis"
+              value={profile.gender}
+              placeholder="Choisir"
+              onChange={(value) =>
+                setProfile((current) => ({ ...current, gender: value as SignupProfile["gender"] }))
+              }
+              options={PROFILE_GENDERS}
+            />
+            <SelectField
+              label="Mon pays"
+              value={profile.country}
+              placeholder="Choisir"
+              onChange={(value) =>
+                setProfile((current) => ({ ...current, country: value as SignupProfile["country"] }))
+              }
+              options={PROFILE_COUNTRIES}
+            />
+          </div>
+        ) : (
+          <>
+            <div className="mb-5 grid grid-cols-2 gap-3">
+              <OAuthButton
+                label="Google"
+                disabled={loading || !isSupabaseConfigured}
+                onClick={() => void handleOAuth("google")}
+                icon={<GoogleIcon />}
+              />
+              <OAuthButton
+                label="Apple"
+                disabled={loading || !isSupabaseConfigured}
+                onClick={() => void handleOAuth("apple")}
+                icon={<AppleIcon />}
+              />
+            </div>
 
-        <div className="mb-5 grid grid-cols-2 gap-3">
-          <OAuthButton
-            label="Google"
-            disabled={loading || !isSupabaseConfigured}
-            onClick={() => void handleOAuth("google")}
-            icon={<GoogleIcon />}
-          />
-          <OAuthButton
-            label="Apple"
-            disabled={loading || !isSupabaseConfigured}
-            onClick={() => void handleOAuth("apple")}
-            icon={<AppleIcon />}
-          />
-        </div>
-
-        <div className="mb-5 flex items-center gap-3 text-xs text-white/30">
-          <span className="h-px flex-1 bg-white/10" />
-          <span>ou</span>
-          <span className="h-px flex-1 bg-white/10" />
-        </div>
+            <div className="mb-5 flex items-center gap-3 text-xs text-white/30">
+              <span className="h-px flex-1 bg-white/10" />
+              <span>ou</span>
+              <span className="h-px flex-1 bg-white/10" />
+            </div>
+          </>
+        )}
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <label className="block">
@@ -246,11 +252,13 @@ export default function AuthPage() {
 function SelectField<T extends string>({
   label,
   value,
+  placeholder,
   onChange,
   options,
 }: {
   label: string;
   value: T;
+  placeholder?: string;
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string }>;
 }) {
@@ -260,8 +268,14 @@ function SelectField<T extends string>({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as T)}
+        required
         className="w-full rounded-xl border border-white/10 bg-[#161616] px-3 py-3 text-sm font-semibold text-white outline-none transition focus:border-[#2d6ade]"
       >
+        {placeholder && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
