@@ -10,6 +10,7 @@ type SignupProfile = {
 };
 
 const pendingEmailKey = "randomchat:pending-email";
+const pendingProfileKey = "randomchat:pending-profile";
 const signupSuccessKey = "randomchat:signup-success-pending";
 
 function getRedirectUrl() {
@@ -24,6 +25,7 @@ export default function AuthPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "apple" | null>(null);
   const [emailExpanded, setEmailExpanded] = useState(true);
 
   const isSignUp = mode === "sign-up";
@@ -31,12 +33,14 @@ export default function AuthPage() {
 
   useEffect(() => {
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-    const errorDescription = hash.get("error_description");
+    const search = new URLSearchParams(window.location.search);
+    const errorDescription = hash.get("error_description") || search.get("error_description");
+    const errorCode = hash.get("error_code") || search.get("error_code");
 
     if (errorDescription) {
       setMode("sign-in");
       setEmailExpanded(false);
-      setError(errorDescription.replace(/\+/g, " "));
+      setError(`${errorDescription.replace(/\+/g, " ")}${errorCode ? ` (${errorCode})` : ""}`);
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
@@ -105,18 +109,38 @@ export default function AuthPage() {
       return;
     }
 
-    setLoading(true);
+    if (isSignUp && (!profile.gender || !profile.country)) {
+      setError("Renseigne ton sexe et ton pays avant de continuer avec Google ou Apple.");
+      return;
+    }
+
+    if (isSignUp) {
+      localStorage.setItem(pendingProfileKey, JSON.stringify(profile));
+      localStorage.setItem(signupSuccessKey, "true");
+    } else {
+      localStorage.removeItem(signupSuccessKey);
+    }
+
+    setOauthLoading(provider);
 
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: redirectUrl,
+        scopes: provider === "google" ? "email profile" : "name email",
+        queryParams:
+          provider === "google"
+            ? {
+                prompt: "select_account",
+              }
+            : undefined,
       },
     });
 
-    setLoading(false);
+    setOauthLoading(null);
 
     if (authError) {
+      localStorage.removeItem(pendingProfileKey);
       localStorage.removeItem(signupSuccessKey);
       setError(authError.message);
     }
@@ -190,6 +214,25 @@ export default function AuthPage() {
               options={PROFILE_COUNTRIES}
             />
           </div>
+        ) : null}
+
+        {isSignUp ? (
+          <div className="mb-5 grid gap-2.5">
+            <OAuthButton
+              label="Continue with Google"
+              disabled={loading || Boolean(oauthLoading) || !isSupabaseConfigured}
+              loading={oauthLoading === "google"}
+              onClick={() => void handleOAuth("google")}
+              icon={<GoogleIcon />}
+            />
+            <OAuthButton
+              label="Continue with Apple"
+              disabled={loading || Boolean(oauthLoading) || !isSupabaseConfigured}
+              loading={oauthLoading === "apple"}
+              onClick={() => void handleOAuth("apple")}
+              icon={<AppleIcon />}
+            />
+          </div>
         ) : (
           <>
             <p className="mx-auto mb-5 max-w-[280px] text-center text-xs font-semibold leading-tight text-white/45">
@@ -201,20 +244,22 @@ export default function AuthPage() {
             <div className="mb-5 space-y-2.5">
               <OAuthButton
                 label="Continue with Google"
-                disabled={loading || !isSupabaseConfigured}
+                disabled={loading || Boolean(oauthLoading) || !isSupabaseConfigured}
+                loading={oauthLoading === "google"}
                 onClick={() => void handleOAuth("google")}
                 icon={<GoogleIcon />}
               />
               <OAuthButton
                 label="Continue with Email"
-                disabled={loading || !isSupabaseConfigured}
+                disabled={loading || Boolean(oauthLoading) || !isSupabaseConfigured}
                 onClick={() => setEmailExpanded((current) => !current)}
                 icon={<EmailIcon />}
                 dark
               />
               <OAuthButton
                 label="Continue with Apple"
-                disabled={loading || !isSupabaseConfigured}
+                disabled={loading || Boolean(oauthLoading) || !isSupabaseConfigured}
+                loading={oauthLoading === "apple"}
                 onClick={() => void handleOAuth("apple")}
                 icon={<AppleIcon />}
               />
@@ -263,7 +308,7 @@ export default function AuthPage() {
 
             <button
               type="submit"
-              disabled={loading || !isSupabaseConfigured}
+          disabled={loading || !isSupabaseConfigured}
               className="w-full rounded-full bg-[#2d6ade] px-4 py-3.5 font-black text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? "Chargement..." : isSignUp ? "Creer mon compte" : "Continue with Email"}
@@ -323,12 +368,14 @@ function OAuthButton({
   icon,
   disabled,
   onClick,
+  loading = false,
   dark = false,
 }: {
   label: string;
   icon: ReactNode;
   disabled: boolean;
   onClick: () => void;
+  loading?: boolean;
   dark?: boolean;
 }) {
   return (
@@ -342,8 +389,10 @@ function OAuthButton({
           : "border-white bg-white text-[#202020] hover:bg-white/90"
       }`}
     >
-      <span className="flex items-center justify-center">{icon}</span>
-      <span className="text-center">{label}</span>
+      <span className="flex items-center justify-center">
+        {loading ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current/25 border-t-current" /> : icon}
+      </span>
+      <span className="text-center">{loading ? "Connexion..." : label}</span>
       <span />
     </button>
   );
