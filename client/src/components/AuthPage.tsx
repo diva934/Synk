@@ -1,4 +1,5 @@
 import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
+import LogoMark from "./LogoMark";
 import { PROFILE_COUNTRIES, PROFILE_GENDERS } from "../lib/matching";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import type { MatchProfile } from "../types";
@@ -111,11 +112,7 @@ export default function AuthPage() {
     <div className="app-screen flex items-center justify-center bg-[#111] px-4 text-white">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#161616] p-6 shadow-2xl">
         <div className="mb-8 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#2d6ade]">
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-          </div>
+          <LogoMark className="h-12 w-12 flex-shrink-0" />
           <div>
             <h1 className="text-xl font-bold">RandomChat</h1>
             <p className="text-sm text-white/45">Compte obligatoire</p>

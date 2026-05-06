@@ -11,6 +11,7 @@ import type {
 } from "../types";
 import Chat from "./Chat";
 import Controls from "./Controls";
+import LogoMark from "./LogoMark";
 import ReportModal from "./ReportModal";
 import VideoCard from "./VideoCard";
 
@@ -291,11 +292,7 @@ export default function VideoRoom({
       >
         {/* Logo */}
         <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: "#2d6ade" }}>
-            <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-            </svg>
-          </div>
+          <LogoMark className="h-10 w-10 flex-shrink-0" />
           <span className="hidden truncate text-base font-bold text-white sm:block">RandomChat</span>
         </div>
 
