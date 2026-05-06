@@ -32,7 +32,7 @@ export default function SafariInstallPrompt() {
   if (!visible) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-3 text-white">
+    <div className="fixed inset-x-0 bottom-0 z-[60] px-3 pb-1 text-white">
       <div className="mx-auto max-w-md overflow-hidden rounded-3xl border border-white/10 bg-[#161616]/95 shadow-2xl backdrop-blur-xl">
         <div className="flex items-start gap-3 px-4 py-4">
           <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-[#2d6ade]">
