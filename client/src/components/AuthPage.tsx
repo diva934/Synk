@@ -1,5 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
+import { PROFILE_COUNTRIES, PROFILE_GENDERS } from "../lib/matching";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
+import type { MatchProfile } from "../types";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -13,6 +15,7 @@ export default function AuthPage() {
   const [mode, setMode] = useState<Mode>("sign-up");
   const [email, setEmail] = useState(() => localStorage.getItem(pendingEmailKey) || "");
   const [password, setPassword] = useState("");
+  const [profile, setProfile] = useState<MatchProfile>({ gender: "male", country: "FR" });
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,6 +52,10 @@ export default function AuthPage() {
       password,
       options: {
         emailRedirectTo: redirectUrl,
+        data: {
+          gender: profile.gender,
+          country: profile.country,
+        },
       },
     };
 
@@ -112,6 +119,27 @@ export default function AuthPage() {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {isSignUp && (
+            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-[#1e1e1e] p-3">
+              <SelectField
+                label="Je suis"
+                value={profile.gender}
+                onChange={(value) =>
+                  setProfile((current) => ({ ...current, gender: value as MatchProfile["gender"] }))
+                }
+                options={PROFILE_GENDERS}
+              />
+              <SelectField
+                label="Mon pays"
+                value={profile.country}
+                onChange={(value) =>
+                  setProfile((current) => ({ ...current, country: value as MatchProfile["country"] }))
+                }
+                options={PROFILE_COUNTRIES}
+              />
+            </div>
+          )}
+
           <label className="block">
             <span className="mb-2 block text-sm text-white/60">Email</span>
             <input
@@ -159,5 +187,34 @@ export default function AuthPage() {
         </form>
       </div>
     </div>
+  );
+}
+
+function SelectField<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: T;
+  onChange: (value: T) => void;
+  options: Array<{ value: T; label: string }>;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm text-white/60">{label}</span>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value as T)}
+        className="w-full rounded-xl border border-white/10 bg-[#161616] px-3 py-3 text-sm font-semibold text-white outline-none transition focus:border-[#2d6ade]"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

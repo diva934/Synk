@@ -6,23 +6,30 @@ import GemShopModal from "./components/GemShopModal";
 import HomePage from "./components/HomePage";
 import LoginSuccessModal from "./components/LoginSuccessModal";
 import VideoRoom from "./components/VideoRoom";
+import { DEFAULT_MATCHING, sanitizeProfile } from "./lib/matching";
 import { supabase } from "./lib/supabase";
-import type { MatchingPreferences, MediaPreferences } from "./types";
+import type { MatchingPreferences, MediaPreferences, MatchProfile } from "./types";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 
 type Page = "home" | "room";
-
-const DEFAULT_MATCHING: MatchingPreferences = {
-  profile: { gender: "male", country: "FR" },
-  filters: { gender: "any", country: "any" },
-};
 
 const SWIPE_COST = 9;
 const DAILY_REWARD = 130;
 
 function getTodayKey(): string {
   return new Date().toISOString().slice(0, 10);
+}
+
+function readStoredProfile(userId: string): MatchProfile | null {
+  const storedProfile = localStorage.getItem(`randomchat:profile:${userId}`);
+  if (!storedProfile) return null;
+
+  try {
+    return sanitizeProfile(JSON.parse(storedProfile));
+  } catch {
+    return null;
+  }
 }
 
 export default function App() {
@@ -79,13 +86,25 @@ export default function App() {
     const storedGems = localStorage.getItem(`randomchat:gems:${session.user.id}`);
     setGemBalance(storedGems ? Number(storedGems) || 0 : 0);
     setDailyClaimDate(localStorage.getItem(`randomchat:daily-gems:${session.user.id}`));
+
+    const accountProfile = sanitizeProfile(session.user.user_metadata);
+    const storedProfile = readStoredProfile(session.user.id);
+    const profile = storedProfile || accountProfile;
+    localStorage.setItem(`randomchat:profile:${session.user.id}`, JSON.stringify(profile));
+
     const storedMatching = localStorage.getItem(`randomchat:matching:${session.user.id}`);
     if (storedMatching) {
       try {
-        setMatchingPrefs(JSON.parse(storedMatching) as MatchingPreferences);
+        const parsedMatching = JSON.parse(storedMatching) as MatchingPreferences;
+        setMatchingPrefs({
+          profile,
+          filters: parsedMatching.filters || DEFAULT_MATCHING.filters,
+        });
       } catch {
-        setMatchingPrefs(DEFAULT_MATCHING);
+        setMatchingPrefs({ ...DEFAULT_MATCHING, profile });
       }
+    } else {
+      setMatchingPrefs({ ...DEFAULT_MATCHING, profile });
     }
 
     let nextSocket: Socket | null = null;

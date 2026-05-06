@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import GemShopModal from "./GemShopModal";
-import type { Country, Gender, MatchProfile, MatchingPreferences, MediaPreferences } from "../types";
+import type { Country, Gender, MatchingPreferences, MediaPreferences } from "../types";
 
 interface Props {
   onStart: (prefs: MediaPreferences) => void;
@@ -56,17 +56,8 @@ const COUNTRIES: Array<{ value: Country; label: string }> = [
   { value: "TN", label: "Tunisie" },
 ];
 
-const PROFILE_COUNTRIES = COUNTRIES.filter(
-  (country): country is { value: MatchProfile["country"]; label: string } => country.value !== "any"
-);
-
 const TARGET_GENDERS: Array<{ value: Gender; label: string }> = [
   { value: "any", label: "Tous" },
-  { value: "female", label: "Femme" },
-  { value: "male", label: "Homme" },
-];
-
-const PROFILE_GENDERS: Array<{ value: MatchProfile["gender"]; label: string }> = [
   { value: "female", label: "Femme" },
   { value: "male", label: "Homme" },
 ];
@@ -185,28 +176,6 @@ export default function HomePage({
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-              <SelectField
-                label="Je suis"
-                value={matching.profile.gender}
-                onChange={(value) =>
-                  setMatching((current) => ({
-                    ...current,
-                    profile: { ...current.profile, gender: value as MatchProfile["gender"] },
-                  }))
-                }
-                options={PROFILE_GENDERS}
-              />
-              <SelectField
-                label="Mon pays"
-                value={matching.profile.country}
-                onChange={(value) =>
-                  setMatching((current) => ({
-                    ...current,
-                    profile: { ...current.profile, country: value as MatchProfile["country"] },
-                  }))
-                }
-                options={PROFILE_COUNTRIES}
-              />
               <SelectField
                 label="Voir"
                 value={matching.filters.gender}
