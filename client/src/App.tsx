@@ -244,7 +244,12 @@ export default function App() {
   }
 
   if (!session) {
-    return <AuthPage />;
+    return (
+      <div className="app-screen bg-[#111]">
+        <AuthPage />
+        <SafariInstallPrompt />
+      </div>
+    );
   }
 
   return (

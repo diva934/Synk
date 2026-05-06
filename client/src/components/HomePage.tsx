@@ -77,7 +77,6 @@ export default function HomePage({
   onSignOut,
 }: Props) {
   const [video, setVideo] = useState(true);
-  const [audio, setAudio] = useState(true);
   const [showShop, setShowShop] = useState(false);
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
 
@@ -154,16 +153,6 @@ export default function HomePage({
               enabled={video}
               onToggle={() => setVideo((v) => !v)}
             />
-            <DeviceToggle
-              label="Microphone"
-              icon={
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 1a3 3 0 013 3v8a3 3 0 01-6 0V4a3 3 0 013-3zm6 9a6 6 0 01-12 0M12 19v4m-3 0h6" />
-                </svg>
-              }
-              enabled={audio}
-              onToggle={() => setAudio((a) => !a)}
-            />
           </div>
 
           <div className="mb-4 rounded-2xl border border-white/5 bg-[#1e1e1e] p-3 md:mb-6">
@@ -210,7 +199,7 @@ export default function HomePage({
 
           {/* CTA button */}
           <button
-            onClick={() => onStart({ video, audio, matching })}
+            onClick={() => onStart({ video, audio: true, matching })}
             className="group relative w-full overflow-hidden rounded-2xl py-4 text-base font-semibold text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
             style={{ background: "#2d6ade" }}
           >

@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 
-const DISMISS_KEY = "randomchat:safari-install-dismissed";
-
 function isIosSafari() {
   const userAgent = window.navigator.userAgent;
   const isIos = /iPad|iPhone|iPod/.test(userAgent);
@@ -17,7 +15,6 @@ export default function SafariInstallPrompt() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem(DISMISS_KEY) === "true") return;
     if (isIosSafari()) {
       const timer = window.setTimeout(() => setVisible(true), 900);
       return () => window.clearTimeout(timer);
@@ -25,7 +22,6 @@ export default function SafariInstallPrompt() {
   }, []);
 
   const dismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "true");
     setVisible(false);
   };
 
