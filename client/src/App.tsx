@@ -5,6 +5,7 @@ import AuthPage from "./components/AuthPage";
 import GemShopModal from "./components/GemShopModal";
 import HomePage from "./components/HomePage";
 import LoginSuccessModal from "./components/LoginSuccessModal";
+import SafariInstallPrompt from "./components/SafariInstallPrompt";
 import VideoRoom from "./components/VideoRoom";
 import { DEFAULT_MATCHING, sanitizeProfile } from "./lib/matching";
 import { supabase } from "./lib/supabase";
@@ -287,6 +288,7 @@ export default function App() {
           onClose={() => setShowShop(false)}
         />
       )}
+      <SafariInstallPrompt />
     </div>
   );
 }
