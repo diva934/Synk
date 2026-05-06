@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { io, Socket } from "socket.io-client";
 import AuthPage from "./components/AuthPage";
+import GemShopModal from "./components/GemShopModal";
 import HomePage from "./components/HomePage";
 import LoginSuccessModal from "./components/LoginSuccessModal";
 import VideoRoom from "./components/VideoRoom";
@@ -28,6 +29,7 @@ export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
+  const [showShop, setShowShop] = useState(false);
   const [page, setPage] = useState<Page>("home");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [mediaError, setMediaError] = useState<string | null>(null);
@@ -68,6 +70,7 @@ export default function App() {
       setSocket(null);
       setOnlineCount(0);
       setGemBalance(0);
+      setShowShop(false);
       setDailyClaimDate(null);
       setMatchingPrefs(DEFAULT_MATCHING);
       return;
@@ -229,14 +232,24 @@ export default function App() {
           localStream={localStream}
           matching={matchingPrefs}
           gemBalance={gemBalance}
-          swipeCost={SWIPE_COST}
           onSpendSwipe={handleSpendSwipe}
+          onOpenShop={() => setShowShop(true)}
           onEnd={handleEndCall}
           onlineCount={onlineCount}
         />
       )}
       {showLoginSuccess && (
         <LoginSuccessModal onContinue={() => setShowLoginSuccess(false)} />
+      )}
+      {showShop && (
+        <GemShopModal
+          balance={gemBalance}
+          canClaimDaily={dailyClaimDate !== getTodayKey()}
+          dailyReward={DAILY_REWARD}
+          onBuy={handleBuyGemPack}
+          onClaimDaily={handleClaimDailyGems}
+          onClose={() => setShowShop(false)}
+        />
       )}
     </div>
   );

@@ -4,7 +4,6 @@ interface Props {
   isNextLoading: boolean;
   showChat: boolean;
   gemBalance: number;
-  swipeCost: number;
   onToggleMute: () => void;
   onToggleCamera: () => void;
   onNext: () => void;
@@ -19,7 +18,6 @@ export default function Controls({
   isNextLoading,
   showChat,
   gemBalance,
-  swipeCost,
   onToggleMute,
   onToggleCamera,
   onNext,
@@ -98,7 +96,7 @@ export default function Controls({
         <button
           onClick={onNext}
           disabled={isNextLoading}
-          title={`Partenaire suivant - ${swipeCost} gemmes`}
+          title="Partenaire suivant"
           className="ctrl-btn active-green disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="icon">
@@ -110,7 +108,7 @@ export default function Controls({
               </svg>
             )}
           </span>
-          <span className="label">Suivant · {swipeCost}</span>
+          <span className="label">Suivant</span>
         </button>
 
         {/* Report */}

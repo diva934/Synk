@@ -25,8 +25,8 @@ interface Props {
   localStream: MediaStream | null;
   matching: MatchingPreferences;
   gemBalance: number;
-  swipeCost: number;
   onSpendSwipe: () => boolean;
+  onOpenShop: () => void;
   onEnd: () => void;
   onlineCount: number;
 }
@@ -48,8 +48,8 @@ export default function VideoRoom({
   localStream,
   matching,
   gemBalance,
-  swipeCost,
   onSpendSwipe,
+  onOpenShop,
   onEnd,
   onlineCount,
 }: Props) {
@@ -62,7 +62,6 @@ export default function VideoRoom({
   const [showChat, setShowChat]       = useState(false);
   const [showReport, setShowReport]   = useState(false);
   const [swipeDir, setSwipeDir]       = useState<"left" | "right" | null>(null);
-  const [gemError, setGemError]       = useState<string | null>(null);
 
   const timer = useTimer(status === "connected");
 
@@ -239,17 +238,15 @@ export default function VideoRoom({
   const handleNext = useCallback(() => {
     if (isNextLoading) return;
     if (!onSpendSwipe()) {
-      setGemError(`Il te faut ${swipeCost} gemmes pour passer au suivant.`);
-      window.setTimeout(() => setGemError(null), 2200);
+      onOpenShop();
       return;
     }
 
-    setGemError(null);
     setIsNextLoading(true);
     closePC(); roomIdRef.current = null; setChatMessages([]);
     socket.emit("next", matching);
     setTimeout(() => setIsNextLoading(false), 1200);
-  }, [isNextLoading, onSpendSwipe, swipeCost, socket, closePC, matching]);
+  }, [isNextLoading, onSpendSwipe, onOpenShop, socket, closePC, matching]);
 
   const toggleMute = useCallback(() => {
     const s = localStreamRef.current; if (!s) return;
@@ -428,14 +425,7 @@ export default function VideoRoom({
             {/* Swipe hint */}
             {status === "connected" && (
               <div className="absolute bottom-28 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none md:hidden" style={{ color: "#777" }}>
-                ← Swipe pour changer · {swipeCost} gemmes →
-              </div>
-            )}
-
-            {gemError && (
-              <div className="absolute left-1/2 top-5 z-20 w-[min(90%,22rem)] -translate-x-1/2 rounded-2xl border border-[#38bdf8]/30 bg-[#10263f]/95 px-4 py-3 text-center text-sm font-semibold text-white shadow-2xl">
-                <div>{gemError}</div>
-                <div className="mt-1 text-xs text-white/55">Récupère tes 130 gemmes gratuites dans la boutique.</div>
+                ← Swipe pour changer →
               </div>
             )}
           </div>
@@ -494,7 +484,6 @@ export default function VideoRoom({
         isNextLoading={isNextLoading}
         showChat={showChat}
         gemBalance={gemBalance}
-        swipeCost={swipeCost}
         onToggleMute={toggleMute}
         onToggleCamera={toggleCamera}
         onNext={handleNext}
