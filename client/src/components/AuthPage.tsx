@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, ReactNode, useEffect, useMemo, useState } from "react";
 import { PROFILE_COUNTRIES, PROFILE_GENDERS } from "../lib/matching";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 import type { MatchProfile } from "../types";
@@ -6,6 +6,7 @@ import type { MatchProfile } from "../types";
 type Mode = "sign-in" | "sign-up";
 
 const pendingEmailKey = "randomchat:pending-email";
+const pendingProfileKey = "randomchat:pending-profile";
 
 function getRedirectUrl() {
   return `${window.location.origin}/`;
@@ -76,6 +77,36 @@ export default function AuthPage() {
     }
   };
 
+  const handleOAuth = async (provider: "google" | "apple") => {
+    setError(null);
+    setMessage(null);
+
+    if (!supabase) {
+      setError("Supabase n'est pas encore configuré.");
+      return;
+    }
+
+    setLoading(true);
+    localStorage.setItem(pendingProfileKey, JSON.stringify(profile));
+
+    const { error: authError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: redirectUrl,
+        queryParams: {
+          gender: profile.gender,
+          country: profile.country,
+        },
+      },
+    });
+
+    setLoading(false);
+
+    if (authError) {
+      setError(authError.message);
+    }
+  };
+
   return (
     <div className="app-screen flex items-center justify-center bg-[#111] px-4 text-white">
       <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#161616] p-6 shadow-2xl">
@@ -118,28 +149,47 @@ export default function AuthPage() {
           </button>
         </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          {isSignUp && (
-            <div className="grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-[#1e1e1e] p-3">
-              <SelectField
-                label="Je suis"
-                value={profile.gender}
-                onChange={(value) =>
-                  setProfile((current) => ({ ...current, gender: value as MatchProfile["gender"] }))
-                }
-                options={PROFILE_GENDERS}
-              />
-              <SelectField
-                label="Mon pays"
-                value={profile.country}
-                onChange={(value) =>
-                  setProfile((current) => ({ ...current, country: value as MatchProfile["country"] }))
-                }
-                options={PROFILE_COUNTRIES}
-              />
-            </div>
-          )}
+        <div className="mb-5 grid grid-cols-2 gap-3 rounded-2xl border border-white/10 bg-[#1e1e1e] p-3">
+          <SelectField
+            label="Je suis"
+            value={profile.gender}
+            onChange={(value) =>
+              setProfile((current) => ({ ...current, gender: value as MatchProfile["gender"] }))
+            }
+            options={PROFILE_GENDERS}
+          />
+          <SelectField
+            label="Mon pays"
+            value={profile.country}
+            onChange={(value) =>
+              setProfile((current) => ({ ...current, country: value as MatchProfile["country"] }))
+            }
+            options={PROFILE_COUNTRIES}
+          />
+        </div>
 
+        <div className="mb-5 grid grid-cols-2 gap-3">
+          <OAuthButton
+            label="Google"
+            disabled={loading || !isSupabaseConfigured}
+            onClick={() => void handleOAuth("google")}
+            icon={<GoogleIcon />}
+          />
+          <OAuthButton
+            label="Apple"
+            disabled={loading || !isSupabaseConfigured}
+            onClick={() => void handleOAuth("apple")}
+            icon={<AppleIcon />}
+          />
+        </div>
+
+        <div className="mb-5 flex items-center gap-3 text-xs text-white/30">
+          <span className="h-px flex-1 bg-white/10" />
+          <span>ou</span>
+          <span className="h-px flex-1 bg-white/10" />
+        </div>
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <label className="block">
             <span className="mb-2 block text-sm text-white/60">Email</span>
             <input
@@ -216,5 +266,49 @@ function SelectField<T extends string>({
         ))}
       </select>
     </label>
+  );
+}
+
+function OAuthButton({
+  label,
+  icon,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  icon: ReactNode;
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white px-4 py-3 text-sm font-bold text-[#111] transition hover:bg-white/90 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+      <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.1s.13-1.44.35-2.1V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.84z" />
+      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06L5.84 9.9C6.71 7.3 9.14 5.38 12 5.38z" />
+    </svg>
+  );
+}
+
+function AppleIcon() {
+  return (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.05 12.54c-.02-2.28 1.86-3.37 1.94-3.42-1.06-1.55-2.71-1.76-3.29-1.79-1.4-.14-2.73.82-3.44.82-.71 0-1.8-.8-2.96-.78-1.52.02-2.92.88-3.71 2.24-1.58 2.74-.4 6.79 1.14 9.01.75 1.09 1.65 2.31 2.83 2.27 1.13-.05 1.56-.73 2.93-.73s1.76.73 2.96.71c1.22-.02 1.99-1.11 2.74-2.2.86-1.26 1.22-2.48 1.24-2.54-.03-.01-2.36-.9-2.38-3.59z" />
+      <path d="M14.79 5.86c.62-.75 1.04-1.8.93-2.86-.9.04-1.99.6-2.64 1.35-.58.67-1.09 1.74-.95 2.76 1 .08 2.03-.51 2.66-1.25z" />
+    </svg>
   );
 }

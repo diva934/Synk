@@ -16,6 +16,7 @@ type Page = "home" | "room";
 
 const SWIPE_COST = 9;
 const DAILY_REWARD = 130;
+const PENDING_PROFILE_KEY = "randomchat:pending-profile";
 
 function getTodayKey(): string {
   return new Date().toISOString().slice(0, 10);
@@ -27,6 +28,17 @@ function readStoredProfile(userId: string): MatchProfile | null {
 
   try {
     return sanitizeProfile(JSON.parse(storedProfile));
+  } catch {
+    return null;
+  }
+}
+
+function readPendingProfile(): MatchProfile | null {
+  const pendingProfile = localStorage.getItem(PENDING_PROFILE_KEY);
+  if (!pendingProfile) return null;
+
+  try {
+    return sanitizeProfile(JSON.parse(pendingProfile));
   } catch {
     return null;
   }
@@ -87,10 +99,15 @@ export default function App() {
     setGemBalance(storedGems ? Number(storedGems) || 0 : 0);
     setDailyClaimDate(localStorage.getItem(`randomchat:daily-gems:${session.user.id}`));
 
+    const pendingProfile = readPendingProfile();
     const accountProfile = sanitizeProfile(session.user.user_metadata);
     const storedProfile = readStoredProfile(session.user.id);
-    const profile = storedProfile || accountProfile;
+    const profile = pendingProfile || storedProfile || accountProfile;
     localStorage.setItem(`randomchat:profile:${session.user.id}`, JSON.stringify(profile));
+    if (pendingProfile) {
+      localStorage.removeItem(PENDING_PROFILE_KEY);
+      void supabase?.auth.updateUser({ data: profile });
+    }
 
     const storedMatching = localStorage.getItem(`randomchat:matching:${session.user.id}`);
     if (storedMatching) {
