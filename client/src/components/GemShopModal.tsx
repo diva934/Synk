@@ -7,7 +7,10 @@ interface GemPack {
 
 interface Props {
   balance: number;
+  canClaimDaily: boolean;
+  dailyReward: number;
   onBuy: (gems: number) => void;
+  onClaimDaily: () => void;
   onClose: () => void;
 }
 
@@ -89,7 +92,14 @@ function GemArtwork({ level }: { level: number }) {
   );
 }
 
-export default function GemShopModal({ balance, onBuy, onClose }: Props) {
+export default function GemShopModal({
+  balance,
+  canClaimDaily,
+  dailyReward,
+  onBuy,
+  onClaimDaily,
+  onClose,
+}: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 backdrop-blur-md">
       <div className="flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#202020] text-white shadow-2xl">
@@ -118,6 +128,39 @@ export default function GemShopModal({ balance, onBuy, onClose }: Props) {
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4 scrollbar-hide">
+          <button
+            type="button"
+            onClick={onClaimDaily}
+            disabled={!canClaimDaily}
+            className={`grid w-full grid-cols-[28%_1fr_auto] overflow-hidden rounded-2xl text-left transition active:scale-[0.99] ${
+              canClaimDaily
+                ? "bg-[#123f68] ring-1 ring-[#38bdf8]/35"
+                : "bg-[#303030] opacity-55"
+            }`}
+          >
+            <div className="relative min-h-[5.9rem] overflow-hidden bg-gradient-to-br from-[#071b31] via-[#0b3658] to-[#07111f]">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_45%_35%,rgba(56,189,248,0.45),transparent_38%)]" />
+              <div className="flex h-full items-center justify-center">
+                <GemIcon className="relative h-16 w-20 drop-shadow-[0_12px_18px_rgba(14,165,233,0.5)]" />
+              </div>
+            </div>
+
+            <div className="flex min-w-0 flex-col justify-center px-4">
+              <div className="text-lg font-black leading-tight">
+                Cadeau quotidien
+              </div>
+              <div className="mt-1 text-sm font-bold text-[#00f0a8]">
+                + {dailyReward.toLocaleString()} gemmes gratuites
+              </div>
+            </div>
+
+            <div className="flex items-center pr-4">
+              <span className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-black">
+                {canClaimDaily ? "Récupérer" : "Demain"}
+              </span>
+            </div>
+          </button>
+
           {GEM_PACKS.map((pack, index) => {
             const total = pack.gems + pack.bonus;
             const level = GEM_PACKS.length - index - 1;

@@ -3,6 +3,8 @@ interface Props {
   isCameraOff: boolean;
   isNextLoading: boolean;
   showChat: boolean;
+  gemBalance: number;
+  swipeCost: number;
   onToggleMute: () => void;
   onToggleCamera: () => void;
   onNext: () => void;
@@ -16,6 +18,8 @@ export default function Controls({
   isCameraOff,
   isNextLoading,
   showChat,
+  gemBalance,
+  swipeCost,
   onToggleMute,
   onToggleCamera,
   onNext,
@@ -94,7 +98,7 @@ export default function Controls({
         <button
           onClick={onNext}
           disabled={isNextLoading}
-          title="Partenaire suivant"
+          title={`Partenaire suivant - ${swipeCost} gemmes`}
           className="ctrl-btn active-green disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <span className="icon">
@@ -106,7 +110,7 @@ export default function Controls({
               </svg>
             )}
           </span>
-          <span className="label">Suivant</span>
+          <span className="label">Suivant · {swipeCost}</span>
         </button>
 
         {/* Report */}
@@ -126,6 +130,10 @@ export default function Controls({
 
       {/* Right — Leave (Zoom red pill button) */}
       <div className="flex items-center">
+        <div className="mr-2 hidden items-center gap-1 rounded-full bg-black/25 px-2.5 py-1 text-xs font-bold text-white/80 sm:flex">
+          <span>💎</span>
+          <span>{gemBalance.toLocaleString()}</span>
+        </div>
         <button
           onClick={onEnd}
           className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#cf2020] text-white hover:bg-[#b91c1c] active:bg-[#991b1b] transition-colors"

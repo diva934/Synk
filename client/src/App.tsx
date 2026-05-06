@@ -17,6 +17,13 @@ const DEFAULT_MATCHING: MatchingPreferences = {
   filters: { gender: "any", country: "any" },
 };
 
+const SWIPE_COST = 9;
+const DAILY_REWARD = 130;
+
+function getTodayKey(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -26,6 +33,7 @@ export default function App() {
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [onlineCount, setOnlineCount] = useState(0);
   const [gemBalance, setGemBalance] = useState(0);
+  const [dailyClaimDate, setDailyClaimDate] = useState<string | null>(null);
   const [matchingPrefs, setMatchingPrefs] = useState<MatchingPreferences>(DEFAULT_MATCHING);
 
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -60,12 +68,14 @@ export default function App() {
       setSocket(null);
       setOnlineCount(0);
       setGemBalance(0);
+      setDailyClaimDate(null);
       setMatchingPrefs(DEFAULT_MATCHING);
       return;
     }
 
     const storedGems = localStorage.getItem(`randomchat:gems:${session.user.id}`);
     setGemBalance(storedGems ? Number(storedGems) || 0 : 0);
+    setDailyClaimDate(localStorage.getItem(`randomchat:daily-gems:${session.user.id}`));
     const storedMatching = localStorage.getItem(`randomchat:matching:${session.user.id}`);
     if (storedMatching) {
       try {
@@ -104,6 +114,33 @@ export default function App() {
       localStorage.setItem(`randomchat:gems:${session.user.id}`, String(next));
       return next;
     });
+  };
+
+  const handleClaimDailyGems = () => {
+    if (!session) return;
+
+    const today = getTodayKey();
+    if (dailyClaimDate === today) return;
+
+    setGemBalance((current) => {
+      const next = current + DAILY_REWARD;
+      localStorage.setItem(`randomchat:gems:${session.user.id}`, String(next));
+      return next;
+    });
+    localStorage.setItem(`randomchat:daily-gems:${session.user.id}`, today);
+    setDailyClaimDate(today);
+  };
+
+  const handleSpendSwipe = () => {
+    if (!session || gemBalance < SWIPE_COST) return false;
+
+    setGemBalance((current) => {
+      if (current < SWIPE_COST) return current;
+      const next = current - SWIPE_COST;
+      localStorage.setItem(`randomchat:gems:${session.user.id}`, String(next));
+      return next;
+    });
+    return true;
   };
 
   const handleStart = async (prefs: MediaPreferences) => {
@@ -180,7 +217,10 @@ export default function App() {
           userEmail={session.user.email}
           gemBalance={gemBalance}
           matchingPrefs={matchingPrefs}
+          canClaimDailyGems={dailyClaimDate !== getTodayKey()}
+          dailyReward={DAILY_REWARD}
           onBuyGemPack={handleBuyGemPack}
+          onClaimDailyGems={handleClaimDailyGems}
           onSignOut={handleSignOut}
         />
       ) : (
@@ -188,6 +228,9 @@ export default function App() {
           socket={socket}
           localStream={localStream}
           matching={matchingPrefs}
+          gemBalance={gemBalance}
+          swipeCost={SWIPE_COST}
+          onSpendSwipe={handleSpendSwipe}
           onEnd={handleEndCall}
           onlineCount={onlineCount}
         />

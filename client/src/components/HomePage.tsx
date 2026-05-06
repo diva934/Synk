@@ -9,7 +9,10 @@ interface Props {
   userEmail?: string;
   gemBalance: number;
   matchingPrefs: MatchingPreferences;
+  canClaimDailyGems: boolean;
+  dailyReward: number;
   onBuyGemPack: (gems: number) => void;
+  onClaimDailyGems: () => void;
   onSignOut: () => void;
 }
 
@@ -75,7 +78,10 @@ export default function HomePage({
   userEmail,
   gemBalance,
   matchingPrefs,
+  canClaimDailyGems,
+  dailyReward,
   onBuyGemPack,
+  onClaimDailyGems,
   onSignOut,
 }: Props) {
   const [video, setVideo] = useState(true);
@@ -323,9 +329,12 @@ export default function HomePage({
       {showShop && (
         <GemShopModal
           balance={gemBalance}
+          canClaimDaily={canClaimDailyGems}
+          dailyReward={dailyReward}
           onBuy={(gems) => {
             onBuyGemPack(gems);
           }}
+          onClaimDaily={onClaimDailyGems}
           onClose={() => setShowShop(false)}
         />
       )}
