@@ -8,6 +8,7 @@ type Mode = "sign-in" | "sign-up";
 
 const pendingEmailKey = "randomchat:pending-email";
 const pendingProfileKey = "randomchat:pending-profile";
+const signupSuccessKey = "randomchat:signup-success-pending";
 
 function getRedirectUrl() {
   return `${window.location.origin}/`;
@@ -73,6 +74,7 @@ export default function AuthPage() {
     }
 
     if (isSignUp) {
+      localStorage.setItem(signupSuccessKey, "true");
       setMode("sign-in");
       setMessage("Compte créé. Vérifiez votre email, puis revenez vous connecter ici.");
     }
@@ -89,6 +91,9 @@ export default function AuthPage() {
 
     setLoading(true);
     localStorage.setItem(pendingProfileKey, JSON.stringify(profile));
+    if (isSignUp) {
+      localStorage.setItem(signupSuccessKey, "true");
+    }
 
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
@@ -104,6 +109,7 @@ export default function AuthPage() {
     setLoading(false);
 
     if (authError) {
+      localStorage.removeItem(signupSuccessKey);
       setError(authError.message);
     }
   };

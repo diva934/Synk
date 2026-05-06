@@ -18,6 +18,7 @@ type Page = "home" | "room";
 const SWIPE_COST = 9;
 const DAILY_REWARD = 130;
 const PENDING_PROFILE_KEY = "randomchat:pending-profile";
+const SIGNUP_SUCCESS_KEY = "randomchat:signup-success-pending";
 
 function getTodayKey(): string {
   return new Date().toISOString().slice(0, 10);
@@ -45,6 +46,12 @@ function readPendingProfile(): MatchProfile | null {
   }
 }
 
+function consumeSignupSuccessFlag(): boolean {
+  if (localStorage.getItem(SIGNUP_SUCCESS_KEY) !== "true") return false;
+  localStorage.removeItem(SIGNUP_SUCCESS_KEY);
+  return true;
+}
+
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -69,12 +76,15 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setAuthLoading(false);
+      if (data.session && consumeSignupSuccessFlag()) {
+        setShowLoginSuccess(true);
+      }
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setSession(nextSession);
       setAuthLoading(false);
-      if (event === "SIGNED_IN") {
+      if (event === "SIGNED_IN" && consumeSignupSuccessFlag()) {
         setShowLoginSuccess(true);
       }
     });
