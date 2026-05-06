@@ -12,6 +12,10 @@ type SignupProfile = {
 const pendingEmailKey = "randomchat:pending-email";
 const pendingProfileKey = "randomchat:pending-profile";
 const signupSuccessKey = "randomchat:signup-success-pending";
+const providerLabels = {
+  google: "Google",
+  apple: "Apple",
+} as const;
 
 function getRedirectUrl() {
   return `${window.location.origin}/`;
@@ -142,6 +146,14 @@ export default function AuthPage() {
     if (authError) {
       localStorage.removeItem(pendingProfileKey);
       localStorage.removeItem(signupSuccessKey);
+      const message = authError.message.toLowerCase();
+      if (message.includes("unsupported provider") || message.includes("provider is not enabled")) {
+        setError(
+          `Connexion ${providerLabels[provider]} pas encore activee dans Supabase. Active le provider ${providerLabels[provider]} dans Authentication > Providers.`
+        );
+        return;
+      }
+
       setError(authError.message);
     }
   };
