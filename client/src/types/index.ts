@@ -39,4 +39,23 @@ export interface ChatMessagePayload {
 export interface MediaPreferences {
   video: boolean;
   audio: boolean;
+  matching: MatchingPreferences;
+}
+
+export type Gender = "any" | "female" | "male";
+export type Country = "any" | "FR" | "BE" | "CH" | "CA" | "US" | "GB" | "DE" | "ES" | "IT" | "MA" | "DZ" | "TN";
+
+export interface MatchProfile {
+  gender: Exclude<Gender, "any">;
+  country: Exclude<Country, "any">;
+}
+
+export interface MatchFilters {
+  gender: Gender;
+  country: Country;
+}
+
+export interface MatchingPreferences {
+  profile: MatchProfile;
+  filters: MatchFilters;
 }

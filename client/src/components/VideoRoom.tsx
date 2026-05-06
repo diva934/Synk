@@ -5,6 +5,7 @@ import type {
   ChatMessage,
   ConnectionStatus,
   IceCandidatePayload,
+  MatchingPreferences,
   MatchedPayload,
   OfferPayload,
 } from "../types";
@@ -22,6 +23,7 @@ const ICE_SERVERS: RTCIceServer[] = [
 interface Props {
   socket: Socket;
   localStream: MediaStream | null;
+  matching: MatchingPreferences;
   onEnd: () => void;
   onlineCount: number;
 }
@@ -38,7 +40,7 @@ function useTimer(running: boolean) {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: Props) {
+export default function VideoRoom({ socket, localStream, matching, onEnd, onlineCount }: Props) {
   const [status, setStatus]           = useState<ConnectionStatus>("searching");
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isMuted, setIsMuted]         = useState(false);
@@ -59,8 +61,57 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
 
   useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
 
+  useEffect(() => {
+    let wakeLock: { release: () => Promise<void> } | null = null;
+
+    const requestWakeLock = async () => {
+      const wakeLockApi = (
+        navigator as Navigator & {
+          wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> };
+        }
+      ).wakeLock;
+
+      if (!wakeLockApi || document.visibilityState !== "visible") return;
+      try {
+        wakeLock = await wakeLockApi.request("screen");
+      } catch {
+        wakeLock = null;
+      }
+    };
+
+    const restoreTracks = () => {
+      const stream = localStreamRef.current;
+      if (!stream) return;
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = !isMuted;
+      });
+      stream.getVideoTracks().forEach((track) => {
+        track.enabled = !isCameraOff;
+      });
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        restoreTracks();
+        void requestWakeLock();
+      }
+    };
+
+    void requestWakeLock();
+    window.addEventListener("focus", restoreTracks);
+    window.addEventListener("pageshow", restoreTracks);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", restoreTracks);
+      window.removeEventListener("pageshow", restoreTracks);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      void wakeLock?.release();
+    };
+  }, [isCameraOff, isMuted]);
+
   // ── PC helpers ──────────────────────────────────────────────────────────────
-  const closePC = useCallback(() => {
+  const closePC = useCallback((clearBufferedIce = true) => {
     if (pcRef.current) {
       pcRef.current.ontrack = null;
       pcRef.current.onicecandidate = null;
@@ -68,17 +119,21 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
       pcRef.current.close();
       pcRef.current = null;
     }
-    iceCandidateBuffer.current = [];
+    if (clearBufferedIce) iceCandidateBuffer.current = [];
     setRemoteStream(null);
   }, []);
 
   const createPC = useCallback((): RTCPeerConnection => {
-    closePC();
+    closePC(false);
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     const stream = localStreamRef.current;
     if (stream) stream.getTracks().forEach((t) => pc.addTrack(t, stream));
     pc.ontrack = (e) => {
-      if (e.streams[0]) { setRemoteStream(e.streams[0]); setStatus("connected"); }
+      const [stream] = e.streams;
+      if (stream) {
+        setRemoteStream(stream);
+        setStatus("connected");
+      }
     };
     pc.onicecandidate = (e) => {
       if (e.candidate && roomIdRef.current)
@@ -101,7 +156,7 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
 
   // ── Socket events ───────────────────────────────────────────────────────────
   useEffect(() => {
-    socket.emit("join-queue");
+    socket.emit("join-queue", matching);
 
     const onSearching    = () => { setStatus("searching"); setRemoteStream(null); setChatMessages([]); };
     const onMatched      = async ({ roomId, isInitiator }: MatchedPayload) => {
@@ -135,13 +190,17 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
       catch (e) { console.error("[webrtc] setAnswer:", e); }
     };
     const onIceCandidate = async ({ candidate }: IceCandidatePayload) => {
-      const pc = pcRef.current; if (!pc) return;
+      const pc = pcRef.current;
+      if (!pc) {
+        iceCandidateBuffer.current.push(candidate);
+        return;
+      }
       if (pc.remoteDescription) await pc.addIceCandidate(new RTCIceCandidate(candidate)).catch(() => {});
       else iceCandidateBuffer.current.push(candidate);
     };
     const onPartnerLeft  = () => {
       closePC(); roomIdRef.current = null; setStatus("partner-left");
-      setTimeout(() => socket.emit("join-queue"), 2000);
+      setTimeout(() => socket.emit("join-queue", matching), 2000);
     };
     const onChatMessage  = ({ message }: { message: string }) =>
       setChatMessages((p) => [...p, { id: Date.now().toString(), from: "partner", text: message, timestamp: Date.now() }]);
@@ -161,16 +220,16 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
       closePC();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket]);
+  }, [socket, matching]);
 
   // ── Actions ─────────────────────────────────────────────────────────────────
   const handleNext = useCallback(() => {
     if (isNextLoading) return;
     setIsNextLoading(true);
     closePC(); roomIdRef.current = null; setChatMessages([]);
-    socket.emit("next");
+    socket.emit("next", matching);
     setTimeout(() => setIsNextLoading(false), 1200);
-  }, [isNextLoading, socket, closePC]);
+  }, [isNextLoading, socket, closePC, matching]);
 
   const toggleMute = useCallback(() => {
     const s = localStreamRef.current; if (!s) return;
@@ -206,26 +265,26 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="flex h-screen flex-col overflow-hidden" style={{ background: "#111" }}>
+    <div className="app-screen flex flex-col overflow-hidden" style={{ background: "#111" }}>
 
       {/* ── Navbar ──────────────────────────────────────────────────────────── */}
       <nav
-        className="flex flex-shrink-0 items-center justify-between px-5 py-3"
+        className="grid flex-shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-5 sm:py-3"
         style={{ background: "#161616", borderBottom: "1px solid #222" }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "#2d6ade" }}>
+        <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: "#2d6ade" }}>
             <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
             </svg>
           </div>
-          <span className="text-base font-bold text-white">RandomChat</span>
+          <span className="hidden truncate text-base font-bold text-white sm:block">RandomChat</span>
         </div>
 
         {/* Center: status + timer */}
-        <div className="flex items-center gap-3 text-sm">
-          <span className={`flex items-center gap-1.5 ${
+        <div className="flex min-w-0 items-center justify-center text-xs sm:text-sm">
+          <span className={`flex min-w-0 items-center gap-1.5 truncate ${
             status === "connected" ? "text-green-400" :
             status === "partner-left" ? "text-red-400" : "text-yellow-400"
           }`}>
@@ -241,8 +300,8 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
         </div>
 
         {/* Right: online + chat toggle */}
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 text-xs" style={{ color: "#555" }}>
+        <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
+          <span className="hidden items-center gap-1.5 text-xs sm:flex" style={{ color: "#555" }}>
             <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
             {onlineCount} en ligne
           </span>
@@ -261,16 +320,16 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
       </nav>
 
       {/* ── Main area ────────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden gap-3 p-3">
+      <div className="flex flex-1 overflow-hidden gap-3 p-0 md:p-3">
 
         {/* ── TWO BIG SQUARES SIDE BY SIDE ────────────────────────────────── */}
         <div
-          className="flex flex-1 gap-3"
+          className="relative flex flex-1 gap-0 md:gap-3"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {/* LEFT SQUARE — Local video (You) */}
-          <div className="relative flex-1 min-w-0 rounded-2xl overflow-hidden" style={{ background: "#1a1a1a", border: "1px solid #2a2a2a" }}>
+          <div className="hidden md:relative md:block md:flex-1 md:min-w-0 md:overflow-hidden md:rounded-2xl" style={{ background: "#1a1a1a", border: "1px solid #2a2a2a" }}>
             <VideoCard
               stream={localStream}
               mirror
@@ -296,7 +355,7 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
 
           {/* RIGHT SQUARE — Remote video (Partner) */}
           <div
-            className="relative flex-1 min-w-0 rounded-2xl overflow-hidden"
+            className="relative flex-1 min-w-0 overflow-hidden md:rounded-2xl"
             style={{
               background: "#1a1a1a",
               border: "1px solid #2a2a2a",
@@ -348,8 +407,34 @@ export default function VideoRoom({ socket, localStream, onEnd, onlineCount }: P
 
             {/* Swipe hint */}
             {status === "connected" && (
-              <div className="absolute bottom-14 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none sm:hidden" style={{ color: "#444" }}>
+              <div className="absolute bottom-28 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none md:hidden" style={{ color: "#777" }}>
                 ← Swipe pour changer →
+              </div>
+            )}
+          </div>
+
+          <div
+            className="absolute bottom-4 right-4 z-20 h-36 w-28 overflow-hidden rounded-2xl shadow-2xl md:hidden"
+            style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.18)" }}
+          >
+            <VideoCard
+              stream={localStream}
+              mirror
+              muted
+              name="Vous"
+              isMicOff={isMuted}
+              className="h-full w-full"
+            />
+
+            {isCameraOff && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" style={{ background: "#1a1a1a" }}>
+                <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "#2a2a2a" }}>
+                  <svg className="h-5 w-5 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M12 18.75H4.5A2.25 2.25 0 012.25 16.5v-9A2.25 2.25 0 014.5 5.25h9A2.25 2.25 0 0115.75 7.5" />
+                    <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <span className="text-[10px]" style={{ color: "#555" }}>Camera off</span>
               </div>
             )}
           </div>

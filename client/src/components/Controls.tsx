@@ -26,7 +26,7 @@ export default function Controls({
   return (
     /* Zoom-style bottom toolbar: dark bar, full width, icons + labels */
     <div
-      className="flex items-center justify-between px-4 py-1"
+      className="flex flex-shrink-0 items-center justify-between px-4 py-1"
       style={{ background: "#1a1a1a", borderTop: "1px solid #2e2e2e" }}
     >
       {/* Left group */}
@@ -128,13 +128,12 @@ export default function Controls({
       <div className="flex items-center">
         <button
           onClick={onEnd}
-          className="flex items-center gap-2 rounded-lg bg-[#cf2020] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#b91c1c] active:bg-[#991b1b] transition-colors"
+          className="flex h-11 w-11 items-center justify-center rounded-lg bg-[#cf2020] text-white hover:bg-[#b91c1c] active:bg-[#991b1b] transition-colors"
           title="Quitter"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
           </svg>
-          Quitter
         </button>
       </div>
     </div>

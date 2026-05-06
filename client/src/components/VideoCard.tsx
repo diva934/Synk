@@ -27,6 +27,9 @@ export default function VideoCard({
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
+      if (stream) {
+        videoRef.current.play().catch(() => {});
+      }
     }
   }, [stream]);
 
