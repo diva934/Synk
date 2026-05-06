@@ -29,6 +29,26 @@
 
   .mirror { transform: scaleX(-1); }
 
+  .rounded {
+    border-radius: 0.75rem !important;
+  }
+
+  .rounded-lg {
+    border-radius: 1rem !important;
+  }
+
+  .rounded-xl {
+    border-radius: 1.25rem !important;
+  }
+
+  .rounded-2xl {
+    border-radius: 1.75rem !important;
+  }
+
+  .rounded-3xl {
+    border-radius: 2.25rem !important;
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
