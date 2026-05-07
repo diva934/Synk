@@ -333,7 +333,7 @@ function FilterIcon({ type }: { type: "gender" | "globe" }) {
   );
 }
 
-function ProfileSheet({
+export function ProfileSheet({
   userEmail,
   matching,
   onlineCount,

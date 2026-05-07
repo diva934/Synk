@@ -11,6 +11,7 @@ import type {
 } from "../types";
 import Chat from "./Chat";
 import Controls from "./Controls";
+import GenderAvatar from "./GenderAvatar";
 import LogoMark from "./LogoMark";
 import ReportModal from "./ReportModal";
 import VideoCard from "./VideoCard";
@@ -28,6 +29,7 @@ interface Props {
   gemBalance: number;
   onSpendSwipe: () => boolean;
   onOpenShop: () => void;
+  onOpenProfile: () => void;
   onEnd: () => void;
   onlineCount: number;
 }
@@ -51,6 +53,7 @@ export default function VideoRoom({
   gemBalance,
   onSpendSwipe,
   onOpenShop,
+  onOpenProfile,
   onEnd,
   onlineCount,
 }: Props) {
@@ -285,21 +288,19 @@ export default function VideoRoom({
 
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
-    <div className="app-screen flex flex-col overflow-hidden" style={{ background: "#111" }}>
+    <div className="app-screen relative overflow-hidden bg-[#05070b]">
 
       {/* ── Navbar ──────────────────────────────────────────────────────────── */}
       <nav
-        className="grid flex-shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 sm:px-5 sm:py-3"
-        style={{ background: "#161616", borderBottom: "1px solid #222" }}
+        className="absolute inset-x-0 top-0 z-30 flex items-center gap-2.5 px-6 py-5"
       >
         {/* Logo */}
-        <div className="flex min-w-0 items-center gap-2 sm:gap-2.5">
-          <LogoMark className="h-10 w-10 flex-shrink-0" />
-          <span className="hidden truncate text-base font-bold text-white sm:block">RandomChat</span>
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <LogoMark className="h-11 w-11 flex-shrink-0" />
         </div>
 
         {/* Center: status + timer */}
-        <div className="flex min-w-0 items-center justify-center text-xs sm:text-sm">
+        <div className="hidden">
           <span className={`flex min-w-0 items-center gap-1.5 truncate ${
             status === "connected" ? "text-green-400" :
             status === "partner-left" ? "text-red-400" : "text-yellow-400"
@@ -316,36 +317,41 @@ export default function VideoRoom({
         </div>
 
         {/* Right: online + chat toggle */}
-        <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-3">
-          <span className="hidden items-center gap-1.5 text-xs sm:flex" style={{ color: "#555" }}>
+        <div className="flex items-center gap-2">
+          <span className="hidden" style={{ color: "#555" }}>
             <span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />
             {onlineCount} en ligne
           </span>
           <button
-            onClick={() => setShowChat((v) => !v)}
-            className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              showChat ? "bg-[#2d6ade]/20 text-[#6da3f5]" : "text-white/40 hover:bg-white/5 hover:text-white/70"
-            }`}
+            type="button"
+            onClick={onOpenShop}
+            className="rounded-full bg-white px-5 py-2.5 text-sm font-black text-black shadow-2xl shadow-black/25 transition hover:bg-white/90"
+            title="Boutique"
           >
-            <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-12 0c0 4.556 4.03 8.25 9 8.25a9.76 9.76 0 002.555-.337 5.97 5.97 0 005.01.577 4.48 4.48 0 01-.978-2.025C20.07 16.178 21 14.189 21 12c0-4.556-4.03-8.25-9-8.25S3 7.444 3 12z" />
-            </svg>
-            Chat
+            Shop
+          </button>
+          <button
+            type="button"
+            onClick={onOpenProfile}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white shadow-2xl shadow-black/25 backdrop-blur-xl transition hover:bg-white/15"
+            title="Profil"
+          >
+            <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />
           </button>
         </div>
       </nav>
 
       {/* ── Main area ────────────────────────────────────────────────────────── */}
-      <div className="flex flex-1 overflow-hidden gap-3 p-0 md:p-3">
+      <div className="absolute inset-0 flex overflow-hidden">
 
         {/* ── TWO BIG SQUARES SIDE BY SIDE ────────────────────────────────── */}
         <div
-          className="relative flex flex-1 gap-0 md:gap-3"
+          className="relative flex flex-1"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           {/* LEFT SQUARE — Local video (You) */}
-          <div className="hidden md:relative md:block md:flex-1 md:min-w-0 md:overflow-hidden md:rounded-2xl" style={{ background: "#1a1a1a", border: "1px solid #2a2a2a" }}>
+          <div className="hidden">
             <VideoCard
               stream={localStream}
               mirror
@@ -372,10 +378,9 @@ export default function VideoRoom({
 
           {/* RIGHT SQUARE — Remote video (Partner) */}
           <div
-            className="relative flex-1 min-w-0 overflow-hidden md:rounded-2xl"
+            className="relative flex-1 min-w-0 overflow-hidden"
             style={{
               background: "#1a1a1a",
-              border: "1px solid #2a2a2a",
               transition: swipeDir ? "transform 0.28s ease, opacity 0.28s ease" : undefined,
               transform: swipeDir === "left" ? "translateX(-110%)" : swipeDir === "right" ? "translateX(110%)" : undefined,
               opacity: swipeDir ? 0 : 1,
@@ -389,6 +394,7 @@ export default function VideoRoom({
               avatarGender={status === "connected" ? partnerAvatarGender : localAvatarGender}
               className="h-full w-full"
             />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/65" />
 
             {/* Searching state */}
             {status === "searching" && (
@@ -495,11 +501,6 @@ export default function VideoRoom({
         onToggleChat={() => setShowChat((v) => !v)}
         onReport={() => setShowReport(true)}
       />
-
-      {/* Safety footer */}
-      <div className="flex-shrink-0 py-1 text-center text-[10px]" style={{ color: "#333", background: "#111" }}>
-        Chiffré P2P · Aucun enregistrement · Respectez les autres
-      </div>
 
       {showReport && <ReportModal onClose={() => setShowReport(false)} />}
     </div>

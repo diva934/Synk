@@ -28,8 +28,7 @@ export default function Controls({
   return (
     /* Zoom-style bottom toolbar: dark bar, full width, icons + labels */
     <div
-      className="flex flex-shrink-0 items-center justify-between px-4 py-1"
-      style={{ background: "#1a1a1a", borderTop: "1px solid #2e2e2e" }}
+      className="absolute inset-x-3 bottom-4 z-30 flex items-center justify-between rounded-3xl border border-white/15 bg-black/45 px-4 py-2 shadow-2xl shadow-black/40 backdrop-blur-2xl"
     >
       {/* Left group */}
       <div className="flex items-center">

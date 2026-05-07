@@ -3,7 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { io, Socket } from "socket.io-client";
 import AuthPage from "./components/AuthPage";
 import GemShopModal from "./components/GemShopModal";
-import HomePage from "./components/HomePage";
+import HomePage, { ProfileSheet } from "./components/HomePage";
 import LoginSuccessModal from "./components/LoginSuccessModal";
 import ProfileSetupPage from "./components/ProfileSetupPage";
 import SafariInstallPrompt from "./components/SafariInstallPrompt";
@@ -58,6 +58,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const [showShop, setShowShop] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [page, setPage] = useState<Page>("home");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [homeCameraRequested, setHomeCameraRequested] = useState(false);
@@ -104,6 +105,7 @@ export default function App() {
       setOnlineCount(0);
       setGemBalance(0);
       setShowShop(false);
+      setShowProfile(false);
       setDailyClaimDate(null);
       setMatchingPrefs(DEFAULT_MATCHING);
       setNeedsProfileSetup(false);
@@ -355,6 +357,7 @@ export default function App() {
           gemBalance={gemBalance}
           onSpendSwipe={handleSpendSwipe}
           onOpenShop={() => setShowShop(true)}
+          onOpenProfile={() => setShowProfile(true)}
           onEnd={handleEndCall}
           onlineCount={onlineCount}
         />
@@ -370,6 +373,15 @@ export default function App() {
           onBuy={handleBuyGemPack}
           onClaimDaily={handleClaimDailyGems}
           onClose={() => setShowShop(false)}
+        />
+      )}
+      {showProfile && (
+        <ProfileSheet
+          userEmail={session.user.email}
+          matching={matchingPrefs}
+          onlineCount={onlineCount}
+          onClose={() => setShowProfile(false)}
+          onSignOut={handleSignOut}
         />
       )}
       <SafariInstallPrompt />
