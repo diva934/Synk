@@ -254,6 +254,11 @@ export default function VideoRoom({
     setTimeout(() => setIsNextLoading(false), 1200);
   }, [isNextLoading, onSpendSwipe, onOpenShop, socket, closePC, matching]);
 
+  const swapFrames = useCallback(() => {
+    if (status !== "connected") return;
+    setIsPartnerLarge((current) => !current);
+  }, [status]);
+
   const sendMessage = useCallback((text: string) => {
     const roomId = roomIdRef.current; if (!roomId) return;
     socket.emit("chat-message", { message: text, roomId });
@@ -464,10 +469,11 @@ export default function VideoRoom({
           </button>
           <button
             type="button"
-            onClick={() => setIsPartnerLarge((value) => !value)}
+            onClick={swapFrames}
             disabled={status !== "connected"}
             className="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
-            title="Inverser les videos"
+            title="Inverser les cadres"
+            aria-label="Inverser les cadres video"
           >
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 3H4a1 1 0 0 0-1 1v4m0-5 7 7M16 21h4a1 1 0 0 0 1-1v-4m0 5-7-7" />
