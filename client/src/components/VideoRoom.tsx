@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { Socket } from "socket.io-client";
 import type {
   AnswerPayload,
+  CameraStatePayload,
   ChatMessage,
   ConnectionStatus,
   IceCandidatePayload,
@@ -42,6 +43,43 @@ function useTimer(running: boolean) {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
+function CameraOffOverlay({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 bg-[#1a1a1a]">
+      <div
+        className={`flex items-center justify-center rounded-full bg-[#2a2a2a] ${
+          compact ? "h-10 w-10" : "h-20 w-20"
+        }`}
+      >
+        <svg
+          className={compact ? "h-5 w-5 text-white/25" : "h-9 w-9 text-white/25"}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={1.8}
+          aria-hidden="true"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M15.75 10.5 20.1 8.4A1.3 1.3 0 0 1 22 9.57v4.86a1.3 1.3 0 0 1-1.9 1.17l-4.35-2.1M4.75 18h8a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-8a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z"
+          />
+          <path strokeLinecap="round" d="M3 3l18 18" />
+        </svg>
+      </div>
+      <span
+        className={
+          compact
+            ? "px-1 text-center text-[10px] font-semibold leading-tight text-white/45"
+            : "text-sm font-semibold text-white/45"
+        }
+      >
+        Camera coupee
+      </span>
+    </div>
+  );
+}
+
 export default function VideoRoom({
   socket,
   localStream,
@@ -55,6 +93,7 @@ export default function VideoRoom({
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isMuted]                    = useState(false);
   const [isCameraOff, setIsCameraOff] = useState(false);
+  const [isPartnerCameraOff, setIsPartnerCameraOff] = useState(false);
   const [isNextLoading, setIsNextLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showChat, setShowChat]       = useState(false);
@@ -69,6 +108,8 @@ export default function VideoRoom({
   const largeIsLocal = !isPartnerLarge;
   const smallStream = isPartnerLarge ? localStream : remoteStream;
   const smallIsLocal = isPartnerLarge;
+  const largeCameraOff = largeIsLocal ? isCameraOff : isPartnerCameraOff;
+  const smallCameraOff = smallIsLocal ? isCameraOff : isPartnerCameraOff;
 
   // refs
   const localStreamRef     = useRef<MediaStream | null>(localStream);
@@ -188,13 +229,15 @@ export default function VideoRoom({
   useEffect(() => {
     socket.emit("join-queue", matching);
 
-    const onSearching    = () => { setStatus("searching"); setRemoteStream(null); setChatMessages([]); setIsPartnerLarge(false); };
+    const onSearching    = () => { setStatus("searching"); setRemoteStream(null); setChatMessages([]); setIsPartnerLarge(false); setIsPartnerCameraOff(false); };
     const onMatched      = async ({ roomId, isInitiator }: MatchedPayload) => {
       roomIdRef.current = roomId;
       iceCandidateBuffer.current = [];
       setChatMessages([]);
       setIsPartnerLarge(false);
+      setIsPartnerCameraOff(false);
       setStatus("searching");
+      socket.emit("camera-state", { roomId, isCameraOff: isCameraOffRef.current });
       if (isInitiator) {
         const pc = createPC();
         try {
@@ -230,11 +273,14 @@ export default function VideoRoom({
       else iceCandidateBuffer.current.push(candidate);
     };
     const onPartnerLeft  = () => {
-      closePC(); roomIdRef.current = null; setStatus("partner-left");
+      closePC(); roomIdRef.current = null; setStatus("partner-left"); setIsPartnerCameraOff(false);
       setTimeout(() => socket.emit("join-queue", matching), 2000);
     };
     const onChatMessage  = ({ message }: { message: string }) =>
       setChatMessages((p) => [...p, { id: Date.now().toString(), from: "partner", text: message, timestamp: Date.now() }]);
+    const onCameraState = ({ isCameraOff }: CameraStatePayload) => {
+      setIsPartnerCameraOff(isCameraOff);
+    };
 
     socket.on("searching",     onSearching);
     socket.on("matched",       onMatched);
@@ -243,9 +289,10 @@ export default function VideoRoom({
     socket.on("ice-candidate", onIceCandidate);
     socket.on("partner-left",  onPartnerLeft);
     socket.on("chat-message",  onChatMessage);
+    socket.on("camera-state",  onCameraState);
 
     return () => {
-      ["searching","matched","offer","answer","ice-candidate","partner-left","chat-message"]
+      ["searching","matched","offer","answer","ice-candidate","partner-left","chat-message","camera-state"]
         .forEach((ev) => socket.off(ev));
       socket.emit("leave-queue");
       closePC();
@@ -262,7 +309,7 @@ export default function VideoRoom({
     }
 
     setIsNextLoading(true);
-    closePC(); roomIdRef.current = null; setChatMessages([]);
+    closePC(); roomIdRef.current = null; setChatMessages([]); setIsPartnerCameraOff(false);
     setIsPartnerLarge(false);
     socket.emit("next", matching);
     setTimeout(() => setIsNextLoading(false), 1200);
@@ -282,8 +329,11 @@ export default function VideoRoom({
       track.enabled = !next;
     });
     void videoSenderRef.current?.replaceTrack(next ? null : videoTrack || null);
+    if (roomIdRef.current) {
+      socket.emit("camera-state", { roomId: roomIdRef.current, isCameraOff: next });
+    }
     setIsCameraOff(next);
-  }, [isCameraOff]);
+  }, [isCameraOff, socket]);
 
   const sendMessage = useCallback((text: string) => {
     const roomId = roomIdRef.current; if (!roomId) return;
@@ -434,17 +484,7 @@ export default function VideoRoom({
             />
 
             {/* Camera off overlay */}
-            {isCameraOff && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-2" style={{ background: "#1a1a1a" }}>
-                <div className="flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "#2a2a2a" }}>
-                  <svg className="h-9 w-9 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M12 18.75H4.5A2.25 2.25 0 012.25 16.5v-9A2.25 2.25 0 014.5 5.25h9A2.25 2.25 0 0115.75 7.5" />
-                    <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <span className="text-sm" style={{ color: "#555" }}>Caméra désactivée</span>
-              </div>
-            )}
+            {isCameraOff && <CameraOffOverlay />}
           </div>
 
           {/* RIGHT SQUARE — Remote video (Partner) */}
@@ -467,17 +507,7 @@ export default function VideoRoom({
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/65" />
 
-            {largeIsLocal && isCameraOff && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2" style={{ background: "#1a1a1a" }}>
-                <div className="flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "#2a2a2a" }}>
-                  <svg className="h-9 w-9 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M12 18.75H4.5A2.25 2.25 0 012.25 16.5v-9A2.25 2.25 0 014.5 5.25h9A2.25 2.25 0 0115.75 7.5" />
-                    <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <span className="text-sm font-semibold text-white/45">Camera coupee</span>
-              </div>
-            )}
+            {largeCameraOff && <CameraOffOverlay />}
 
             {/* Partner left overlay */}
             {status === "partner-left" && (
@@ -511,17 +541,7 @@ export default function VideoRoom({
               className="h-full w-full"
             />
 
-            {smallIsLocal && isCameraOff && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" style={{ background: "#1a1a1a" }}>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "#2a2a2a" }}>
-                  <svg className="h-5 w-5 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M12 18.75H4.5A2.25 2.25 0 012.25 16.5v-9A2.25 2.25 0 014.5 5.25h9A2.25 2.25 0 0115.75 7.5" />
-                    <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
-                  </svg>
-                </div>
-                <span className="px-1 text-center text-[10px] font-semibold leading-tight text-white/45">Camera coupee</span>
-              </div>
-            )}
+            {smallCameraOff && <CameraOffOverlay compact />}
           </div>
         </div>
 

@@ -258,6 +258,12 @@ io.on("connection", (socket: Socket) => {
 
   // ── Chat ─────────────────────────────────────────────────────────────────────
 
+  socket.on("camera-state", ({ isCameraOff, roomId }: { isCameraOff: unknown; roomId: string }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.users.includes(socket.id) || typeof isCameraOff !== "boolean") return;
+    relayToPartner(roomId, "camera-state", { isCameraOff });
+  });
+
   socket.on("chat-message", ({ message, roomId }: { message: string; roomId: string }) => {
     // Only relay if the sender is actually in the room
     const room = rooms.get(roomId);

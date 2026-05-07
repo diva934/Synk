@@ -30,6 +30,10 @@ export interface IceCandidatePayload {
   candidate: RTCIceCandidateInit;
 }
 
+export interface CameraStatePayload {
+  isCameraOff: boolean;
+}
+
 export interface ChatMessagePayload {
   message: string;
 }
