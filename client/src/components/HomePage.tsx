@@ -17,19 +17,15 @@ interface Props {
   onSignOut: () => void;
 }
 
-// Fake preview cards (decorative, like Azar's right panel)
 const PREVIEW_CARDS = [
-  { name: "Sofia, 24",   flag: "🇫🇷", online: true,  tall: false },
-  { name: "Marco, 27",   flag: "🇮🇹", online: true,  tall: true  },
-  { name: "Yuna, 22",    flag: "🇰🇷", online: false, tall: false },
-  { name: "Alex, 25",    flag: "🇺🇸", online: true,  tall: true  },
-  { name: "Léa, 23",     flag: "🇧🇪", online: true,  tall: false },
-  { name: "Carlos, 29",  flag: "🇧🇷", online: false, tall: true  },
-  { name: "Emma, 21",    flag: "🇩🇪", online: true,  tall: false },
-  { name: "Kai, 26",     flag: "🇯🇵", online: true,  tall: false },
+  { name: "Sofia, 24", flag: "FR", online: true, tall: false },
+  { name: "Marco, 27", flag: "IT", online: true, tall: true },
+  { name: "Yuna, 22", flag: "KR", online: false, tall: false },
+  { name: "Alex, 25", flag: "US", online: true, tall: true },
+  { name: "Lea, 23", flag: "BE", online: true, tall: false },
+  { name: "Carlos, 29", flag: "BR", online: false, tall: true },
 ];
 
-// Gradient colors for placeholder avatars
 const GRADIENTS = [
   "linear-gradient(135deg,#1e3a5f,#2d6ade)",
   "linear-gradient(135deg,#3b1f5e,#7c3aed)",
@@ -37,8 +33,6 @@ const GRADIENTS = [
   "linear-gradient(135deg,#3b2a1f,#d97706)",
   "linear-gradient(135deg,#3b1f2a,#db2777)",
   "linear-gradient(135deg,#1f2b3b,#0891b2)",
-  "linear-gradient(135deg,#2e1f3b,#9333ea)",
-  "linear-gradient(135deg,#3b2e1f,#ea580c)",
 ];
 
 const COUNTRIES: Array<{ value: Country; label: string }> = [
@@ -47,13 +41,13 @@ const COUNTRIES: Array<{ value: Country; label: string }> = [
   { value: "BE", label: "Belgique" },
   { value: "CH", label: "Suisse" },
   { value: "CA", label: "Canada" },
-  { value: "US", label: "États-Unis" },
+  { value: "US", label: "Etats-Unis" },
   { value: "GB", label: "Royaume-Uni" },
   { value: "DE", label: "Allemagne" },
   { value: "ES", label: "Espagne" },
   { value: "IT", label: "Italie" },
   { value: "MA", label: "Maroc" },
-  { value: "DZ", label: "Algérie" },
+  { value: "DZ", label: "Algerie" },
   { value: "TN", label: "Tunisie" },
 ];
 
@@ -85,31 +79,21 @@ export default function HomePage({
   }, [matchingPrefs]);
 
   return (
-    <div className="app-screen flex overflow-hidden" style={{ background: "#111" }}>
-
-      {/* ── LEFT PANEL ─────────────────────────────────────────────────────── */}
-      <div
-        className="flex w-full flex-col md:w-[420px] lg:w-[480px] flex-shrink-0"
-        style={{ background: "#161616", borderRight: "1px solid #1e1e1e" }}
-      >
-        {/* Top nav */}
+    <div className="app-screen flex overflow-hidden bg-[#111]">
+      <div className="flex w-full flex-shrink-0 flex-col bg-[#161616] md:w-[420px] lg:w-[480px] md:border-r md:border-[#1e1e1e]">
         <div className="flex items-center gap-2.5 px-6 py-5" style={{ borderBottom: "1px solid #1e1e1e" }}>
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <LogoMark className="h-11 w-11 flex-shrink-0" />
             <div className="min-w-0">
-              <span className="block text-lg font-bold text-white tracking-tight">RandomChat</span>
-              {userEmail && (
-                <span className="block truncate text-[11px]" style={{ color: "#555" }}>
-                  {userEmail}
-                </span>
-              )}
+              <span className="block text-lg font-bold tracking-tight text-white">RandomChat</span>
+              {userEmail && <span className="block truncate text-[11px] text-white/30">{userEmail}</span>}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setShowShop(true)}
-              className="flex items-center gap-1.5 rounded-lg bg-white/5 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10"
+              className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10"
               title="Boutique"
             >
               <span>💎</span>
@@ -118,36 +102,32 @@ export default function HomePage({
             <button
               type="button"
               onClick={onSignOut}
-              className="rounded-lg px-3 py-2 text-xs font-semibold text-white/45 transition hover:bg-white/5 hover:text-white"
+              className="rounded-full px-3 py-2 text-xs font-semibold text-white/45 transition hover:bg-white/5 hover:text-white"
             >
               Sortir
             </button>
           </div>
         </div>
 
-        {/* Main content */}
-        <div className="flex flex-1 flex-col justify-center px-6 py-5 md:px-8 md:py-8">
-          {/* Counter */}
-          <div className="mb-5 flex items-center gap-2 text-sm md:mb-8" style={{ color: "#4ade80" }}>
-            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="font-medium">{onlineCount.toLocaleString()} en ligne maintenant !</span>
-          </div>
+        <div className="flex min-h-0 flex-1 flex-col px-6 py-5 md:px-8 md:py-8">
+          <div className="flex flex-1 flex-col justify-center">
+            <div className="mb-5 flex items-center gap-2 text-sm text-green-400 md:mb-8">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+              <span className="font-medium">{onlineCount.toLocaleString()} en ligne maintenant !</span>
+            </div>
 
-          {/* Headline */}
-          <h1 className="mb-2 text-4xl font-bold leading-tight text-white">
-            Rencontrez des<br />inconnus en vidéo
-          </h1>
-          <p className="mb-5 text-sm leading-relaxed md:mb-8" style={{ color: "#666" }}>
-            Connexions vidéo anonymes et aléatoires.
-          </p>
+            <h1 className="mb-2 text-4xl font-bold leading-tight text-white">
+              Rencontrez des<br />inconnus en video
+            </h1>
+            <p className="mb-5 text-sm leading-relaxed text-white/35 md:mb-8">
+              Connexions video anonymes et aleatoires.
+            </p>
 
-          {/* Device toggles */}
-          <div className="mb-4 space-y-2.5 md:mb-6">
             <DeviceToggle
-              label="Caméra"
+              label="Camera"
               icon={
                 <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0 1 21 9.382v5.236a1 1 0 0 1-1.447.894L15.75 13.5M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9A2.25 2.25 0 0 0 13.5 5.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25z" />
                 </svg>
               }
               enabled={video}
@@ -155,15 +135,17 @@ export default function HomePage({
             />
           </div>
 
-          <div className="mb-4 rounded-2xl border border-white/5 bg-[#1e1e1e] p-3 md:mb-6">
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-sm font-semibold text-white/80">Critères</span>
-              <span className="text-[11px] text-white/35">matching</span>
+          {mediaError && (
+            <div className="mb-4 rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-xs leading-relaxed text-red-200">
+              {mediaError}
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-2">
-              <SelectField
-                label="Voir"
+          <div className="flex-shrink-0 pb-2">
+            <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/5 bg-[#0b1b18]/90 px-5 py-4 shadow-2xl shadow-black/30 backdrop-blur-xl">
+              <FilterPill
+                icon="⚧"
+                label="Genre"
                 value={matching.filters.gender}
                 onChange={(value) =>
                   setMatching((current) => ({
@@ -173,8 +155,10 @@ export default function HomePage({
                 }
                 options={TARGET_GENDERS}
               />
-              <SelectField
-                label="Pays ciblé"
+              <span className="mx-4 h-7 w-px bg-white/15" />
+              <FilterPill
+                icon="🌍"
+                label="Pays"
                 value={matching.filters.country}
                 onChange={(value) =>
                   setMatching((current) => ({
@@ -185,86 +169,55 @@ export default function HomePage({
                 options={COUNTRIES}
               />
             </div>
-          </div>
 
-          {/* Error */}
-          {mediaError && (
-            <div
-              className="mb-4 rounded-xl px-4 py-3 text-xs leading-relaxed"
-              style={{ background: "rgba(220,38,38,0.12)", border: "1px solid rgba(220,38,38,0.25)", color: "#fca5a5" }}
+            <button
+              onClick={() => onStart({ video, audio: true, matching })}
+              className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-black transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "#00f29a" }}
             >
-              {mediaError}
-            </div>
-          )}
-
-          {/* CTA button */}
-          <button
-            onClick={() => onStart({ video, audio: true, matching })}
-            className="group relative w-full overflow-hidden rounded-2xl py-4 text-base font-semibold text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
-            style={{ background: "#2d6ade" }}
-          >
-            <span className="flex items-center justify-center gap-2">
-              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9A2.25 2.25 0 0013.5 5.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
-              </svg>
-              Démarrer le Video Chat
-            </span>
-          </button>
-
-          <p className="mt-4 text-center text-[11px]" style={{ color: "#444" }}>
-            En continuant, vous acceptez de respecter les autres.
-          </p>
+              <span className="flex items-center justify-center gap-2">
+                <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 6.5A3.5 3.5 0 0 0 1.5 10v4A3.5 3.5 0 0 0 5 17.5h7A3.5 3.5 0 0 0 15.5 14v-.17l3.55 2.28A1.6 1.6 0 0 0 21.5 14.76V9.24a1.6 1.6 0 0 0-2.45-1.35l-3.55 2.28V10A3.5 3.5 0 0 0 12 6.5H5Z" />
+                </svg>
+                Lancer un chat video
+              </span>
+            </button>
+          </div>
         </div>
-
       </div>
 
-      {/* ── RIGHT PANEL — Preview grid (like Azar) ─────────────────────────── */}
-      <div className="hidden md:flex flex-1 flex-col overflow-hidden">
-        {/* Grid header */}
+      <div className="hidden flex-1 flex-col overflow-hidden md:flex">
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #1a1a1a" }}>
-          <span className="text-sm font-medium" style={{ color: "#555" }}>Aperçu en ligne</span>
-          <span className="flex items-center gap-1.5 text-xs" style={{ color: "#444" }}>
-            <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-sm font-medium text-white/30">Apercu en ligne</span>
+          <span className="flex items-center gap-1.5 text-xs text-white/25">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
             {onlineCount} disponibles
           </span>
         </div>
 
-        {/* Masonry-style card grid */}
-        <div className="flex-1 overflow-y-auto p-4" style={{ scrollbarWidth: "none" }}>
-          <div className="columns-2 lg:columns-3 gap-3 space-y-3">
+        <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
+          <div className="columns-2 gap-3 space-y-3 lg:columns-3">
             {PREVIEW_CARDS.map((card, i) => (
               <div
                 key={card.name}
-                className="break-inside-avoid rounded-2xl overflow-hidden relative cursor-pointer group"
+                className="break-inside-avoid overflow-hidden rounded-2xl relative cursor-pointer group"
                 style={{
                   background: GRADIENTS[i % GRADIENTS.length],
                   height: card.tall ? 240 : 170,
                   border: "1px solid #222",
                 }}
               >
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200" />
-
-                {/* ONLINE badge */}
+                <div className="absolute inset-0 bg-black/0 transition-colors duration-200 group-hover:bg-black/20" />
                 {card.online && (
-                  <div
-                    className="absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold text-white"
-                    style={{ background: "rgba(34,197,94,0.9)" }}
-                  >
+                  <div className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-semibold text-white">
                     <span className="h-1.5 w-1.5 rounded-full bg-white" />
                     ONLINE
                   </div>
                 )}
-
-                {/* Avatar initials */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-4xl font-bold text-white/20 select-none">
-                    {card.name[0]}
-                  </span>
+                  <span className="select-none text-4xl font-bold text-white/20">{card.name[0]}</span>
                 </div>
-
-                {/* Name badge */}
-                <div className="absolute bottom-0 left-0 right-0 p-3" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)" }}>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
                   <p className="text-sm font-semibold text-white">
                     {card.flag} {card.name}
                   </p>
@@ -272,12 +225,6 @@ export default function HomePage({
               </div>
             ))}
           </div>
-
-          {/* Blur overlay at bottom hinting more content */}
-          <div
-            className="sticky bottom-0 left-0 right-0 h-16 pointer-events-none"
-            style={{ background: "linear-gradient(to top, #111, transparent)", marginTop: -64 }}
-          />
         </div>
       </div>
 
@@ -286,37 +233,39 @@ export default function HomePage({
           balance={gemBalance}
           canClaimDaily={canClaimDailyGems}
           dailyReward={dailyReward}
-          onBuy={(gems) => {
-            onBuyGemPack(gems);
-          }}
+          onBuy={onBuyGemPack}
           onClaimDaily={onClaimDailyGems}
           onClose={() => setShowShop(false)}
         />
       )}
-
     </div>
   );
 }
 
-// ─── Device toggle row ────────────────────────────────────────────────────────
-function SelectField<T extends string>({
+function FilterPill<T extends string>({
+  icon,
   label,
   value,
   onChange,
   options,
 }: {
+  icon: string;
   label: string;
   value: T;
   onChange: (value: T) => void;
   options: Array<{ value: T; label: string }>;
 }) {
   return (
-    <label className="block">
-      <span className="mb-1 block text-[11px] font-medium text-white/35">{label}</span>
+    <label className="relative block min-w-0 cursor-pointer">
+      <span className="pointer-events-none flex items-center justify-center gap-2 text-lg font-black text-white">
+        <span className="text-xl leading-none">{icon}</span>
+        <span>{label}</span>
+      </span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as T)}
-        className="w-full rounded-xl border border-white/5 bg-[#161616] px-3 py-2 text-xs font-semibold text-white outline-none transition focus:border-[#2d6ade]"
+        aria-label={label}
+        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
@@ -341,7 +290,7 @@ function DeviceToggle({
 }) {
   return (
     <div
-      className="flex items-center justify-between rounded-xl px-4 py-3 cursor-pointer"
+      className="flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3"
       style={{ background: "#1e1e1e", border: "1px solid #282828" }}
       onClick={onToggle}
     >
@@ -349,11 +298,11 @@ function DeviceToggle({
         <span style={{ color: enabled ? "#888" : "#444" }}>{icon}</span>
         {label}
       </div>
-      {/* iOS-style toggle */}
       <div
         className="relative flex-shrink-0 rounded-full transition-colors duration-200"
         style={{
-          width: 40, height: 22,
+          width: 40,
+          height: 22,
           background: enabled ? "#2d6ade" : "#2e2e2e",
           border: "1px solid " + (enabled ? "#2d6ade" : "#3a3a3a"),
         }}
