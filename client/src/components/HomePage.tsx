@@ -104,20 +104,15 @@ export default function HomePage({
         <div className="flex items-center gap-2.5 px-6 py-5" style={{ borderBottom: "1px solid #1e1e1e" }}>
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <LogoMark className="h-11 w-11 flex-shrink-0" />
-            <div className="min-w-0">
-              <span className="block text-lg font-bold tracking-tight text-white">RandomChat</span>
-              {userEmail && <span className="block truncate text-[11px] text-white/30">{userEmail}</span>}
-            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setShowShop(true)}
-              className="flex items-center gap-1.5 rounded-full bg-white/5 px-3 py-2 text-xs font-bold text-white transition hover:bg-white/10"
+              className="rounded-full bg-white px-5 py-2.5 text-sm font-black text-black transition hover:bg-white/90"
               title="Boutique"
             >
-              <span>💎</span>
-              <span>{gemBalance.toLocaleString()}</span>
+              Shop
             </button>
             <button
               type="button"
