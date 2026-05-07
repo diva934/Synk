@@ -267,15 +267,66 @@ export default function VideoRoom({
   }, [socket]);
 
   // ── Swipe (mobile) ──────────────────────────────────────────────────────────
-  const touchStartX = useRef<number | null>(null);
-  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
-  const handleTouchEnd   = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || isNextLoading) return;
-    const delta = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(delta) < 80) return;
-    setSwipeDir(delta < 0 ? "left" : "right");
+  const swipeStartRef = useRef<{ x: number; y: number; pointerId?: number } | null>(null);
+  const lastSwipeAtRef = useRef(0);
+
+  const isInteractiveSwipeTarget = (target: EventTarget | null) =>
+    target instanceof HTMLElement &&
+    Boolean(target.closest("button,a,input,select,textarea,[role='button']"));
+
+  const startSwipe = (x: number, y: number, target: EventTarget | null, pointerId?: number) => {
+    if (isNextLoading || isInteractiveSwipeTarget(target)) return;
+    swipeStartRef.current = { x, y, pointerId };
+  };
+
+  const cancelSwipe = () => {
+    swipeStartRef.current = null;
+  };
+
+  const finishSwipe = (x: number, y: number, pointerId?: number) => {
+    const start = swipeStartRef.current;
+    if (!start || isNextLoading) return;
+    if (start.pointerId !== undefined && pointerId !== undefined && start.pointerId !== pointerId) return;
+    swipeStartRef.current = null;
+
+    const deltaX = x - start.x;
+    const deltaY = y - start.y;
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    const now = Date.now();
+
+    if (now - lastSwipeAtRef.current < 450) return;
+    if (absX < 60 || absX < absY * 1.15) return;
+
+    lastSwipeAtRef.current = now;
+    setSwipeDir(deltaX < 0 ? "left" : "right");
     setTimeout(() => { setSwipeDir(null); handleNext(); }, 280);
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    if (isNextLoading || isInteractiveSwipeTarget(e.target)) return;
+    startSwipe(e.clientX, e.clientY, e.target, e.pointerId);
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    finishSwipe(e.clientX, e.clientY, e.pointerId);
+    if (e.currentTarget.hasPointerCapture?.(e.pointerId)) {
+      e.currentTarget.releasePointerCapture?.(e.pointerId);
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if ("PointerEvent" in window || e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    startSwipe(touch.clientX, touch.clientY, e.target);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if ("PointerEvent" in window || e.changedTouches.length !== 1) return;
+    const touch = e.changedTouches[0];
+    finishSwipe(touch.clientX, touch.clientY);
   };
 
   // ── Render ──────────────────────────────────────────────────────────────────
@@ -339,6 +390,10 @@ export default function VideoRoom({
         {/* ── TWO BIG SQUARES SIDE BY SIDE ────────────────────────────────── */}
         <div
           className="relative flex flex-1"
+          style={{ touchAction: "pan-y" }}
+          onPointerDown={handlePointerDown}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={cancelSwipe}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
