@@ -98,7 +98,9 @@ export default function HomePage({
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
+  const [dismissedMediaError, setDismissedMediaError] = useState<string | null>(null);
   const previewVideoRef = useRef<HTMLVideoElement | null>(null);
+  const showMediaPermissionPrompt = Boolean(mediaError && dismissedMediaError !== mediaError);
 
   useEffect(() => {
     setMatching(matchingPrefs);
@@ -112,6 +114,10 @@ export default function HomePage({
     if (!previewVideoRef.current) return;
     previewVideoRef.current.srcObject = previewStream;
   }, [previewStream]);
+
+  useEffect(() => {
+    setDismissedMediaError(null);
+  }, [mediaError]);
 
   return (
     <div className="app-screen relative flex overflow-hidden bg-[#05070b]">
@@ -152,12 +158,6 @@ export default function HomePage({
 
         <div className="flex min-h-0 flex-1 flex-col px-6 py-5 md:px-8 md:py-8">
           <div className="flex flex-1" />
-
-          {mediaError && (
-            <div className="mb-4 rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-xs leading-relaxed text-red-200">
-              {mediaError}
-            </div>
-          )}
 
           <div className="flex-shrink-0 pb-2">
             <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/25 bg-white/[0.11] px-5 py-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
@@ -266,6 +266,47 @@ export default function HomePage({
           onSignOut={onSignOut}
         />
       )}
+
+      {showMediaPermissionPrompt && (
+        <MediaPermissionPrompt onClose={() => setDismissedMediaError(mediaError)} />
+      )}
+    </div>
+  );
+}
+
+function MediaPermissionPrompt({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="absolute inset-0 z-[80] flex flex-col bg-black/82 text-white backdrop-blur-[2px]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(255,255,255,0.08),transparent_24%),linear-gradient(to_bottom,rgba(0,0,0,0.45),rgba(0,0,0,0.94))]" />
+
+      <div className="relative flex min-h-0 flex-1 flex-col px-7 pb-8 pt-24">
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-[44rem] text-center">
+            <div className="mx-auto mb-12 flex h-28 w-28 items-center justify-center rounded-full bg-[#00ef9b]/20 shadow-[0_0_48px_rgba(0,239,155,0.3)] ring-1 ring-[#00ef9b]/25">
+              <svg className="h-16 w-16 text-[#00ef9b]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.1}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5 20.1 8.4A1.3 1.3 0 0 1 22 9.57v4.86a1.3 1.3 0 0 1-1.9 1.17l-4.35-2.1M4.75 18h8a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-8a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z" />
+                <path strokeLinecap="round" d="M3 3l18 18" />
+              </svg>
+            </div>
+
+            <h2 className="text-[2.55rem] font-black leading-[1.08] tracking-tight sm:text-6xl">
+              Autoriser l'acces a votre camera et microphone
+            </h2>
+            <p className="mx-auto mt-28 max-w-[43rem] text-[1.35rem] font-semibold leading-tight text-white/62 sm:mt-12 sm:text-2xl">
+              Cliquez sur l'icone a cote de la barre d'adresse, choisissez "Parametres du site",
+              et reglez la camera et le microphone sur "Autoriser".
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="relative w-full rounded-full border-2 border-white/75 bg-black/15 py-5 text-2xl font-black text-white shadow-2xl shadow-black/40 backdrop-blur-md transition active:scale-[0.98]"
+        >
+          Fermer
+        </button>
+      </div>
     </div>
   );
 }
