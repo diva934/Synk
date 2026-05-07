@@ -54,3 +54,13 @@ export function sanitizeProfile(input: unknown): MatchProfile {
 
   return { gender, country };
 }
+
+export function hasCompleteProfile(input: unknown): input is MatchProfile {
+  if (!input || typeof input !== "object") return false;
+
+  const profile = input as Partial<Record<keyof MatchProfile, unknown>>;
+  return (
+    PROFILE_GENDERS.some((option) => option.value === profile.gender) &&
+    PROFILE_COUNTRIES.some((option) => option.value === profile.country)
+  );
+}

@@ -5,9 +5,10 @@ import AuthPage from "./components/AuthPage";
 import GemShopModal from "./components/GemShopModal";
 import HomePage from "./components/HomePage";
 import LoginSuccessModal from "./components/LoginSuccessModal";
+import ProfileSetupPage from "./components/ProfileSetupPage";
 import SafariInstallPrompt from "./components/SafariInstallPrompt";
 import VideoRoom from "./components/VideoRoom";
-import { DEFAULT_MATCHING, sanitizeProfile } from "./lib/matching";
+import { DEFAULT_MATCHING, hasCompleteProfile, sanitizeProfile } from "./lib/matching";
 import { supabase } from "./lib/supabase";
 import type { MatchingPreferences, MediaPreferences, MatchProfile } from "./types";
 
@@ -64,6 +65,7 @@ export default function App() {
   const [gemBalance, setGemBalance] = useState(0);
   const [dailyClaimDate, setDailyClaimDate] = useState<string | null>(null);
   const [matchingPrefs, setMatchingPrefs] = useState<MatchingPreferences>(DEFAULT_MATCHING);
+  const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   const [socket, setSocket] = useState<Socket | null>(null);
 
@@ -103,6 +105,7 @@ export default function App() {
       setShowShop(false);
       setDailyClaimDate(null);
       setMatchingPrefs(DEFAULT_MATCHING);
+      setNeedsProfileSetup(false);
       return;
     }
 
@@ -111,11 +114,20 @@ export default function App() {
     setDailyClaimDate(localStorage.getItem(`randomchat:daily-gems:${session.user.id}`));
 
     const pendingProfile = readPendingProfile();
-    const accountProfile = sanitizeProfile(session.user.user_metadata);
     const storedProfile = readStoredProfile(session.user.id);
+    const accountProfile = hasCompleteProfile(session.user.user_metadata)
+      ? sanitizeProfile(session.user.user_metadata)
+      : null;
     const profile = pendingProfile || storedProfile || accountProfile;
-    localStorage.setItem(`randomchat:profile:${session.user.id}`, JSON.stringify(profile));
-    if (pendingProfile) {
+
+    if (profile) {
+      setNeedsProfileSetup(false);
+      localStorage.setItem(`randomchat:profile:${session.user.id}`, JSON.stringify(profile));
+    } else {
+      setNeedsProfileSetup(true);
+    }
+
+    if (pendingProfile && profile) {
       localStorage.removeItem(PENDING_PROFILE_KEY);
       void supabase?.auth.updateUser({ data: profile });
     }
@@ -125,14 +137,14 @@ export default function App() {
       try {
         const parsedMatching = JSON.parse(storedMatching) as MatchingPreferences;
         setMatchingPrefs({
-          profile,
+          profile: profile || DEFAULT_MATCHING.profile,
           filters: parsedMatching.filters || DEFAULT_MATCHING.filters,
         });
       } catch {
-        setMatchingPrefs({ ...DEFAULT_MATCHING, profile });
+        setMatchingPrefs({ ...DEFAULT_MATCHING, profile: profile || DEFAULT_MATCHING.profile });
       }
     } else {
-      setMatchingPrefs({ ...DEFAULT_MATCHING, profile });
+      setMatchingPrefs({ ...DEFAULT_MATCHING, profile: profile || DEFAULT_MATCHING.profile });
     }
 
     let nextSocket: Socket | null = null;
@@ -249,6 +261,15 @@ export default function App() {
     await supabase?.auth.signOut();
   };
 
+  const handleCompleteProfile = (profile: MatchProfile) => {
+    if (!session) return;
+
+    localStorage.setItem(`randomchat:profile:${session.user.id}`, JSON.stringify(profile));
+    setMatchingPrefs((current) => ({ ...current, profile }));
+    setNeedsProfileSetup(false);
+    void supabase?.auth.updateUser({ data: profile });
+  };
+
   if (authLoading) {
     return <div className="app-screen bg-[#111]" />;
   }
@@ -257,6 +278,15 @@ export default function App() {
     return (
       <div className="app-screen bg-[#111]">
         <AuthPage />
+        <SafariInstallPrompt />
+      </div>
+    );
+  }
+
+  if (needsProfileSetup) {
+    return (
+      <div className="app-screen bg-[#111]">
+        <ProfileSetupPage onComplete={handleCompleteProfile} />
         <SafariInstallPrompt />
       </div>
     );
