@@ -225,38 +225,34 @@ export default function App() {
         localStorage.setItem(`randomchat:matching:${session.user.id}`, JSON.stringify(prefs.matching));
       }
 
-      const liveVideoTracks =
-        prefs.video
-          ? localStream?.getVideoTracks().filter((track) => track.readyState === "live") || []
-          : [];
-      const needsNewVideo = prefs.video && liveVideoTracks.length === 0;
-      const needsAudio = prefs.audio;
+      localStream?.getTracks().forEach((track) => track.stop());
 
-      const requestedStream =
-        needsNewVideo || needsAudio
+      const stream =
+        prefs.video || prefs.audio
           ? await navigator.mediaDevices.getUserMedia({
-              video: needsNewVideo
+              video: prefs.video
                 ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }
                 : false,
-              audio: needsAudio,
+              audio: prefs.audio
+                ? {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                  }
+                : false,
             })
           : new MediaStream();
 
-      const nextStream = new MediaStream([
-        ...liveVideoTracks,
-        ...requestedStream.getVideoTracks(),
-        ...requestedStream.getAudioTracks(),
-      ]);
-
-      localStream?.getTracks().forEach((track) => {
-        if (!nextStream.getTracks().includes(track)) {
-          track.stop();
-        }
+      stream.getTracks().forEach((track) => {
+        track.enabled = true;
       });
 
-      setLocalStream(nextStream);
+      setLocalStream(stream);
+      setHomeCameraRequested(stream.getVideoTracks().length > 0);
       setPage("room");
     } catch (err) {
+      setLocalStream(null);
+      setHomeCameraRequested(false);
       if (err instanceof Error) {
         if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
           setMediaError(

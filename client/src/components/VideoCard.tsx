@@ -29,13 +29,28 @@ export default function VideoCard({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      if (stream) {
-        videoRef.current.play().catch(() => {});
-      }
+    const video = videoRef.current;
+    if (!video) return;
+
+    video.srcObject = stream;
+    video.muted = muted;
+
+    if (!stream) return;
+
+    const playVideo = () => {
+      video.play().catch(() => {});
+    };
+
+    if (video.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      playVideo();
+    } else {
+      video.onloadedmetadata = playVideo;
     }
-  }, [stream]);
+
+    return () => {
+      video.onloadedmetadata = null;
+    };
+  }, [stream, muted]);
 
   return (
     <div className={`relative overflow-hidden bg-[#242424] ${className}`}>
