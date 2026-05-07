@@ -64,10 +64,11 @@ export default function VideoRoom({
   const timer = useTimer(status === "connected");
   const localAvatarGender = matching.profile.gender;
   const partnerAvatarGender = matching.filters.gender === "any" ? "unknown" : matching.filters.gender;
-  const largeStream = status === "connected" && isPartnerLarge ? remoteStream : localStream;
-  const largeIsLocal = status !== "connected" || !isPartnerLarge;
-  const smallStream = status === "connected" ? (isPartnerLarge ? localStream : remoteStream) : null;
-  const smallIsLocal = status === "connected" && isPartnerLarge;
+  const canSwapFrames = status === "connected" || status === "searching";
+  const largeStream = isPartnerLarge ? remoteStream : localStream;
+  const largeIsLocal = !isPartnerLarge;
+  const smallStream = isPartnerLarge ? localStream : remoteStream;
+  const smallIsLocal = isPartnerLarge;
 
   // refs
   const localStreamRef     = useRef<MediaStream | null>(localStream);
@@ -255,9 +256,9 @@ export default function VideoRoom({
   }, [isNextLoading, onSpendSwipe, onOpenShop, socket, closePC, matching]);
 
   const swapFrames = useCallback(() => {
-    if (status !== "connected") return;
+    if (!canSwapFrames) return;
     setIsPartnerLarge((current) => !current);
-  }, [status]);
+  }, [canSwapFrames]);
 
   const sendMessage = useCallback((text: string) => {
     const roomId = roomIdRef.current; if (!roomId) return;
@@ -382,6 +383,7 @@ export default function VideoRoom({
               mirror={largeIsLocal}
               muted={largeIsLocal}
               name={largeIsLocal ? "Vous" : "Partenaire"}
+              searching={status === "searching" && !largeIsLocal && !largeStream}
               avatarGender={largeIsLocal ? localAvatarGender : partnerAvatarGender}
               className="h-full w-full"
             />
@@ -415,7 +417,7 @@ export default function VideoRoom({
               muted={smallIsLocal}
               name={smallIsLocal ? "Vous" : "Partenaire"}
               isMicOff={smallIsLocal ? isMuted : false}
-              searching={status === "searching" && !smallStream}
+              searching={status === "searching" && !smallIsLocal && !smallStream}
               avatarGender={smallIsLocal ? localAvatarGender : partnerAvatarGender}
               className="h-full w-full"
             />
@@ -447,7 +449,7 @@ export default function VideoRoom({
           <button
             type="button"
             onClick={swapFrames}
-            disabled={status !== "connected"}
+            disabled={!canSwapFrames}
             className="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
             title="Inverser les cadres"
             aria-label="Inverser les cadres video"
