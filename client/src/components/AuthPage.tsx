@@ -15,6 +15,10 @@ function formatAuthError(message: string) {
     return "Connexion Google pas encore activee dans Supabase. Active le provider Google dans Authentication > Providers.";
   }
 
+  if (lower.includes("unable to exchange code") || lower.includes("unexpected_failure")) {
+    return "Google est active, mais Supabase n'arrive pas a valider le code Google. Verifie le Client Secret complet dans Supabase et l'URL de redirection Google.";
+  }
+
   if (lower.includes("invalid login credentials")) {
     return "Email ou mot de passe incorrect.";
   }
@@ -41,7 +45,8 @@ export default function AuthPage() {
 
     if (errorDescription) {
       setEmailExpanded(false);
-      setError(`${errorDescription.replace(/\+/g, " ")}${errorCode ? ` (${errorCode})` : ""}`);
+      const decodedError = decodeURIComponent(errorDescription.replace(/\+/g, " "));
+      setError(formatAuthError(`${decodedError}${errorCode ? ` (${errorCode})` : ""}`));
       window.history.replaceState(null, "", window.location.pathname);
     }
   }, []);
@@ -107,7 +112,7 @@ export default function AuthPage() {
       provider: "google",
       options: {
         redirectTo: redirectUrl,
-        scopes: "email profile",
+        scopes: "openid email profile https://www.googleapis.com/auth/userinfo.email",
         queryParams: {
           prompt: "select_account",
         },
