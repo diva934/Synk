@@ -262,6 +262,7 @@ export default function HomePage({
           userEmail={userEmail}
           matching={matching}
           onlineCount={onlineCount}
+          gemBalance={gemBalance}
           onClose={() => setShowProfile(false)}
           onSignOut={onSignOut}
         />
@@ -378,12 +379,14 @@ export function ProfileSheet({
   userEmail,
   matching,
   onlineCount,
+  gemBalance = 0,
   onClose,
   onSignOut,
 }: {
   userEmail?: string;
   matching: MatchingPreferences;
   onlineCount: number;
+  gemBalance?: number;
   onClose: () => void;
   onSignOut: () => void;
 }) {
@@ -391,6 +394,7 @@ export function ProfileSheet({
   const countryLabel = PROFILE_COUNTRY_LABELS[matching.profile.country];
   const genderLabel = PROFILE_GENDER_LABELS[matching.profile.gender];
   const [showEditProfile, setShowEditProfile] = useState(false);
+  const [showMorePage, setShowMorePage] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[70] bg-black/45 text-white backdrop-blur-sm" onClick={onClose}>
@@ -450,7 +454,7 @@ export function ProfileSheet({
 
         <div className="px-8 py-6">
           <ProfileAction icon="profile" label="Modifier le profil" onClick={() => setShowEditProfile(true)} />
-          <ProfileAction icon="settings" label="Plus" />
+          <ProfileAction icon="settings" label="Plus" onClick={() => setShowMorePage(true)} />
           <ProfileAction icon="contact" label="Nous contacter" />
           <ProfileAction icon="logout" label="Fermer la session" onClick={onSignOut} />
         </div>
@@ -464,7 +468,183 @@ export function ProfileSheet({
           onClose={() => setShowEditProfile(false)}
         />
       )}
+
+      {showMorePage && (
+        <ProfileMorePage
+          userEmail={userEmail}
+          gemBalance={gemBalance}
+          onClose={() => setShowMorePage(false)}
+        />
+      )}
     </div>
+  );
+}
+
+function ProfileMorePage({
+  userEmail,
+  gemBalance,
+  onClose,
+}: {
+  userEmail?: string;
+  gemBalance: number;
+  onClose: () => void;
+}) {
+  const [marketingNotifications, setMarketingNotifications] = useState(false);
+  const [onlineFriends, setOnlineFriends] = useState(true);
+  const [newFollowers, setNewFollowers] = useState(true);
+
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex flex-col overflow-hidden bg-[#101010] text-white"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div className="flex flex-shrink-0 items-center gap-4 px-6 pb-8 pt-14">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10"
+          title="Fermer"
+        >
+          <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <h1 className="min-w-0 text-5xl font-black leading-none tracking-tight">Plus</h1>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-16 scrollbar-hide">
+        <MoreSectionTitle label="Activité" />
+        <MoreRow label="Mes Gemmes" value={gemBalance.toLocaleString()} gem />
+        <MoreRow label="Mes Items" />
+
+        <MoreSectionTitle label="Compte et sécurité" className="mt-12" />
+        <MoreRow label="Email" sublabel={userEmail || "Non connecté"} />
+        <MoreRow label="Paramètres du compte" />
+
+        <MoreSectionTitle label="Notification" className="mt-12" />
+        <MoreToggleRow
+          label="Notification de marketing"
+          checked={marketingNotifications}
+          onChange={setMarketingNotifications}
+        />
+        <MoreToggleRow
+          label="Informer mes amis que je suis en ligne"
+          description="Tu peux informer tes amis que tu es en ligne et recevoir des notifications lorsqu'ils le sont aussi."
+          checked={onlineFriends}
+          onChange={setOnlineFriends}
+        />
+        <MoreToggleRow
+          label="Notifications de nouveaux abonnés"
+          checked={newFollowers}
+          onChange={setNewFollowers}
+        />
+
+        <MoreSectionTitle label="Préférences" className="mt-12" />
+      </div>
+    </div>
+  );
+}
+
+function MoreSectionTitle({ label, className = "" }: { label: string; className?: string }) {
+  return (
+    <h2 className={`mb-7 text-4xl font-black tracking-tight text-white/20 ${className}`}>
+      {label}
+    </h2>
+  );
+}
+
+function MoreRow({
+  label,
+  sublabel,
+  value,
+  gem = false,
+}: {
+  label: string;
+  sublabel?: string;
+  value?: string;
+  gem?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      className="flex min-h-[5.9rem] w-full items-center gap-5 text-left transition active:scale-[0.99]"
+    >
+      <div className="min-w-0 flex-1">
+        <div className="text-[2rem] font-medium leading-tight text-white">{label}</div>
+        {sublabel && (
+          <div className="mt-2 truncate text-[1.6rem] font-medium leading-tight text-white/40">
+            {sublabel}
+          </div>
+        )}
+      </div>
+      {value !== undefined && (
+        <div className="flex items-center gap-3 text-[2rem] font-semibold text-white">
+          {gem && <GemMiniIcon className="h-9 w-9" />}
+          <span>{value}</span>
+        </div>
+      )}
+      <ChevronIcon />
+    </button>
+  );
+}
+
+function MoreToggleRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string;
+  description?: string;
+  checked: boolean;
+  onChange: (value: boolean) => void;
+}) {
+  return (
+    <div className="flex min-h-[6.4rem] items-center gap-5 py-2">
+      <div className="min-w-0 flex-1">
+        <div className="text-[2rem] font-medium leading-tight text-white">{label}</div>
+        {description && (
+          <p className="mt-3 max-w-[33rem] text-[1.55rem] font-medium leading-tight text-white/40">
+            {description}
+          </p>
+        )}
+      </div>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={`relative h-16 w-28 flex-shrink-0 rounded-full p-1.5 transition ${
+          checked ? "bg-[#58ea8c]" : "bg-[#303030]"
+        }`}
+        aria-pressed={checked}
+      >
+        <span
+          className={`block h-[3.25rem] w-[3.25rem] rounded-full bg-white shadow-lg transition ${
+            checked ? "translate-x-12" : "translate-x-0"
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
+function ChevronIcon() {
+  return (
+    <svg className="h-9 w-9 flex-shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+function GemMiniIcon({ className = "h-8 w-8" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 64 52" fill="none" aria-hidden="true">
+      <path d="M8 22 20 8h24l12 14-24 26L8 22Z" fill="#ffca3a" />
+      <path d="M20 8h24l5 14H15l5-14Z" fill="#ffe27a" />
+      <path d="M15 22h34L32 48 15 22Z" fill="#f7a800" />
+      <path d="M8 22h7l17 26L8 22Z" fill="#ffb51d" />
+      <path d="M56 22h-7L32 48l24-26Z" fill="#e49300" />
+      <path d="M22 11h20" stroke="white" strokeWidth="4" strokeLinecap="round" opacity="0.45" />
+    </svg>
   );
 }
 
