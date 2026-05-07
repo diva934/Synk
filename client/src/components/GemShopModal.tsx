@@ -6,6 +6,7 @@ interface GemPack {
 }
 
 interface Props {
+  notice?: string | null;
   balance: number;
   canClaimDaily: boolean;
   dailyReward: number;
@@ -93,6 +94,7 @@ function GemArtwork({ level }: { level: number }) {
 }
 
 export default function GemShopModal({
+  notice,
   balance,
   canClaimDaily,
   dailyReward,
@@ -128,6 +130,22 @@ export default function GemShopModal({
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4 scrollbar-hide">
+          {notice && (
+            <div className="rounded-2xl border border-[#38bdf8]/35 bg-[#0b64d8]/20 px-4 py-3 shadow-[0_16px_35px_rgba(14,116,255,0.22)]">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#38bdf8]/15 ring-1 ring-[#38bdf8]/35">
+                  <GemIcon className="h-7 w-7" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-black leading-tight text-white">{notice}</p>
+                  <p className="mt-1 text-xs font-bold text-white/55">
+                    Choisis un pack ou recupere ton cadeau quotidien.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <button
             type="button"
             onClick={onClaimDaily}

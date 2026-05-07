@@ -58,6 +58,7 @@ export default function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [showLoginSuccess, setShowLoginSuccess] = useState(false);
   const [showShop, setShowShop] = useState(false);
+  const [shopNotice, setShopNotice] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [page, setPage] = useState<Page>("home");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -105,6 +106,7 @@ export default function App() {
       setOnlineCount(0);
       setGemBalance(0);
       setShowShop(false);
+      setShopNotice(null);
       setShowProfile(false);
       setDailyClaimDate(null);
       setMatchingPrefs(DEFAULT_MATCHING);
@@ -174,6 +176,7 @@ export default function App() {
 
   const handleBuyGemPack = (gems: number) => {
     if (!session) return;
+    setShopNotice(null);
     setGemBalance((current) => {
       const next = current + gems;
       localStorage.setItem(`randomchat:gems:${session.user.id}`, String(next));
@@ -187,6 +190,7 @@ export default function App() {
     const today = getTodayKey();
     if (dailyClaimDate === today) return;
 
+    setShopNotice(null);
     setGemBalance((current) => {
       const next = current + DAILY_REWARD;
       localStorage.setItem(`randomchat:gems:${session.user.id}`, String(next));
@@ -206,6 +210,11 @@ export default function App() {
       return next;
     });
     return true;
+  };
+
+  const openShop = (notice?: string | null) => {
+    setShopNotice(typeof notice === "string" ? notice : null);
+    setShowShop(true);
   };
 
   const handleStart = async (prefs: MediaPreferences) => {
@@ -355,7 +364,7 @@ export default function App() {
           localStream={localStream}
           matching={matchingPrefs}
           onSpendSwipe={handleSpendSwipe}
-          onOpenShop={() => setShowShop(true)}
+          onOpenShop={openShop}
           onOpenProfile={() => setShowProfile(true)}
           onlineCount={onlineCount}
         />
@@ -365,12 +374,16 @@ export default function App() {
       )}
       {showShop && (
         <GemShopModal
+          notice={shopNotice}
           balance={gemBalance}
           canClaimDaily={dailyClaimDate !== getTodayKey()}
           dailyReward={DAILY_REWARD}
           onBuy={handleBuyGemPack}
           onClaimDaily={handleClaimDailyGems}
-          onClose={() => setShowShop(false)}
+          onClose={() => {
+            setShowShop(false);
+            setShopNotice(null);
+          }}
         />
       )}
       {showProfile && (

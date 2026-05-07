@@ -25,7 +25,7 @@ interface Props {
   localStream: MediaStream | null;
   matching: MatchingPreferences;
   onSpendSwipe: () => boolean;
-  onOpenShop: () => void;
+  onOpenShop: (notice?: string) => void;
   onOpenProfile: () => void;
   onlineCount: number;
 }
@@ -257,7 +257,7 @@ export default function VideoRoom({
   const handleNext = useCallback(() => {
     if (isNextLoading) return;
     if (!onSpendSwipe()) {
-      onOpenShop();
+      onOpenShop("A court de gemmes, recharge ici");
       return;
     }
 
@@ -392,7 +392,7 @@ export default function VideoRoom({
           </span>
           <button
             type="button"
-            onClick={onOpenShop}
+            onClick={() => onOpenShop()}
             className="rounded-full bg-white px-5 py-2.5 text-sm font-black text-black shadow-2xl shadow-black/25 transition hover:bg-white/90"
             title="Boutique"
           >
