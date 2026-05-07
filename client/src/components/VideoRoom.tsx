@@ -348,7 +348,6 @@ export default function VideoRoom({
               stream={localStream}
               mirror
               muted
-              name="Vous"
               isMicOff={isMuted}
               avatarGender={localAvatarGender}
               className="h-full w-full"
@@ -382,7 +381,6 @@ export default function VideoRoom({
               stream={largeStream}
               mirror={largeIsLocal}
               muted={largeIsLocal}
-              name={largeIsLocal ? "Vous" : "Partenaire"}
               searching={status === "searching" && !largeIsLocal && !largeStream}
               avatarGender={largeIsLocal ? localAvatarGender : partnerAvatarGender}
               className="h-full w-full"
@@ -415,7 +413,6 @@ export default function VideoRoom({
               stream={smallStream}
               mirror={smallIsLocal}
               muted={smallIsLocal}
-              name={smallIsLocal ? "Vous" : "Partenaire"}
               isMicOff={smallIsLocal ? isMuted : false}
               searching={status === "searching" && !smallIsLocal && !smallStream}
               avatarGender={smallIsLocal ? localAvatarGender : partnerAvatarGender}
