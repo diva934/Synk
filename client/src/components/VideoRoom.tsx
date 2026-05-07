@@ -54,7 +54,7 @@ export default function VideoRoom({
   const [status, setStatus]           = useState<ConnectionStatus>("searching");
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [isMuted]                    = useState(false);
-  const [isCameraOff]                = useState(false);
+  const [isCameraOff, setIsCameraOff] = useState(false);
   const [isNextLoading, setIsNextLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showChat, setShowChat]       = useState(false);
@@ -260,6 +260,16 @@ export default function VideoRoom({
     setIsPartnerLarge((current) => !current);
   }, [canSwapFrames]);
 
+  const toggleCamera = useCallback(() => {
+    const stream = localStreamRef.current;
+    if (!stream) return;
+    const next = !isCameraOff;
+    stream.getVideoTracks().forEach((track) => {
+      track.enabled = !next;
+    });
+    setIsCameraOff(next);
+  }, [isCameraOff]);
+
   const sendMessage = useCallback((text: string) => {
     const roomId = roomIdRef.current; if (!roomId) return;
     socket.emit("chat-message", { message: text, roomId });
@@ -442,6 +452,18 @@ export default function VideoRoom({
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/65" />
 
+            {largeIsLocal && isCameraOff && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2" style={{ background: "#1a1a1a" }}>
+                <div className="flex h-20 w-20 items-center justify-center rounded-full" style={{ background: "#2a2a2a" }}>
+                  <svg className="h-9 w-9 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0121 9.382v5.236a1 1 0 01-1.447.894L15.75 13.5M12 18.75H4.5A2.25 2.25 0 012.25 16.5v-9A2.25 2.25 0 014.5 5.25h9A2.25 2.25 0 0115.75 7.5" />
+                    <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <span className="text-sm" style={{ color: "#555" }}>CamÃ©ra dÃ©sactivÃ©e</span>
+              </div>
+            )}
+
             {/* Partner left overlay */}
             {status === "partner-left" && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3" style={{ background: "rgba(0,0,0,0.85)" }}>
@@ -474,7 +496,7 @@ export default function VideoRoom({
               className="h-full w-full"
             />
 
-            {isCameraOff && (
+            {smallIsLocal && isCameraOff && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1" style={{ background: "#1a1a1a" }}>
                 <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: "#2a2a2a" }}>
                   <svg className="h-5 w-5 text-white/20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -513,14 +535,16 @@ export default function VideoRoom({
           <span className="h-px w-7 bg-white/20" />
           <button
             type="button"
-            onClick={onOpenShop}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
-            title="Shop"
+            onClick={toggleCamera}
+            className={`flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-white/10 ${
+              isCameraOff ? "text-red-300" : "text-white"
+            }`}
+            title={isCameraOff ? "Activer la camera" : "Desactiver la camera"}
+            aria-label={isCameraOff ? "Activer la camera" : "Desactiver la camera"}
           >
-            <svg className="h-7 w-7" viewBox="0 0 64 64" fill="none">
-              <path d="M13 24c0-6 5-11 11-11h16c6 0 11 5 11 11v21c0 4-3 7-7 7H20c-4 0-7-3-7-7V24Z" fill="#2d6ade" />
-              <path d="M23 24v-2a9 9 0 0 1 18 0v2" stroke="white" strokeWidth="5" strokeLinecap="round" />
-              <path d="M20 35h24M20 43h18" stroke="white" strokeOpacity=".75" strokeWidth="4" strokeLinecap="round" />
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5 20.1 8.4A1.3 1.3 0 0 1 22 9.57v4.86a1.3 1.3 0 0 1-1.9 1.17l-4.35-2.1M4.75 18h8a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-8a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z" />
+              {isCameraOff && <path strokeLinecap="round" d="M3 3l18 18" />}
             </svg>
           </button>
         </div>
