@@ -452,10 +452,10 @@ export default function VideoRoom({
           </div>
         </div>
 
-        <div className="absolute left-4 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-3 rounded-[28px] border border-white/10 bg-black/40 px-3 py-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
+        <div className="absolute left-4 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-2.5 rounded-[999px] border border-white/10 bg-black/40 px-2.5 py-3.5 shadow-2xl shadow-black/40 backdrop-blur-2xl">
           <button
             type="button"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl text-white transition hover:bg-white/10"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
             title="Effets"
           >
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -466,7 +466,7 @@ export default function VideoRoom({
             type="button"
             onClick={() => setIsPartnerLarge((value) => !value)}
             disabled={status !== "connected"}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
             title="Inverser les videos"
           >
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -477,7 +477,7 @@ export default function VideoRoom({
           <button
             type="button"
             onClick={onOpenShop}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl text-white transition hover:bg-white/10"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-white transition hover:bg-white/10"
             title="Shop"
           >
             <svg className="h-7 w-7" viewBox="0 0 64 64" fill="none">
