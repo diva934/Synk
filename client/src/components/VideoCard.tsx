@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import GenderAvatar from "./GenderAvatar";
+import type { MatchProfile } from "../types";
 
 interface Props {
   stream: MediaStream | null;
@@ -8,6 +10,7 @@ interface Props {
   isMicOff?: boolean;
   loading?: boolean;
   className?: string;
+  avatarGender?: MatchProfile["gender"] | "unknown";
   /** If true, show the "searching" spinner overlay */
   searching?: boolean;
 }
@@ -21,6 +24,7 @@ export default function VideoCard({
   loading = false,
   searching = false,
   className = "",
+  avatarGender = "unknown",
 }: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -58,9 +62,7 @@ export default function VideoCard({
             </>
           ) : (
             /* Avatar placeholder (camera off) */
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#3a3a3a] text-3xl font-semibold text-white/60 select-none">
-              {name ? name[0].toUpperCase() : "?"}
-            </div>
+            <GenderAvatar gender={avatarGender} className="h-24 w-24" />
           )}
         </div>
       )}

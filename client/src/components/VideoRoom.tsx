@@ -65,6 +65,8 @@ export default function VideoRoom({
   const [swipeDir, setSwipeDir]       = useState<"left" | "right" | null>(null);
 
   const timer = useTimer(status === "connected");
+  const localAvatarGender = matching.profile.gender;
+  const partnerAvatarGender = matching.filters.gender === "any" ? "unknown" : matching.filters.gender;
 
   // refs
   const localStreamRef     = useRef<MediaStream | null>(localStream);
@@ -350,6 +352,7 @@ export default function VideoRoom({
               muted
               name="Vous"
               isMicOff={isMuted}
+              avatarGender={localAvatarGender}
               className="h-full w-full"
             />
 
@@ -416,6 +419,7 @@ export default function VideoRoom({
               mirror={false}
               muted={false}
               name={status === "connected" ? "Partenaire" : undefined}
+              avatarGender={partnerAvatarGender}
               className="h-full w-full"
             />
 
@@ -437,6 +441,7 @@ export default function VideoRoom({
               muted
               name="Vous"
               isMicOff={isMuted}
+              avatarGender={localAvatarGender}
               className="h-full w-full"
             />
 

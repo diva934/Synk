@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import GenderAvatar from "./GenderAvatar";
 import GemShopModal from "./GemShopModal";
 import LogoMark from "./LogoMark";
 import type { Country, Gender, MatchingPreferences, MediaPreferences } from "../types";
@@ -120,7 +121,7 @@ export default function HomePage({
               className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white transition hover:bg-white/10"
               title="Profil"
             >
-              <ProfileAvatar className="h-8 w-8" />
+              <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />
             </button>
           </div>
         </div>
@@ -317,7 +318,7 @@ function ProfileSheet({
 
           <div className="absolute left-1/2 top-20 -translate-x-1/2">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-black/75 shadow-2xl">
-              <ProfileAvatar className="h-16 w-16" />
+              <GenderAvatar gender={matching.profile.gender} className="h-16 w-16" />
             </div>
           </div>
 
@@ -332,7 +333,7 @@ function ProfileSheet({
 
         <div className="border-b border-white/10 px-8 py-6">
           <div className="flex items-center gap-4">
-            <ProfileAvatar className="h-14 w-14 flex-shrink-0" />
+            <GenderAvatar gender={matching.profile.gender} className="h-14 w-14 flex-shrink-0" />
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-lg font-black">
                 <span className="truncate">{username}</span>
@@ -416,23 +417,6 @@ function ProfileActionIcon({ icon }: { icon: "profile" | "settings" | "contact" 
     <svg className="h-8 w-8 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 21a8 8 0 0 1 16 0" />
-    </svg>
-  );
-}
-
-function ProfileAvatar({ className = "" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 64 64" fill="none" aria-hidden="true">
-      <defs>
-        <radialGradient id="profileAvatarGlow" cx="50%" cy="20%" r="70%">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="45%" stopColor="#dce6ff" />
-          <stop offset="100%" stopColor="#8090ba" />
-        </radialGradient>
-      </defs>
-      <circle cx="32" cy="32" r="31" fill="rgba(255,255,255,0.05)" />
-      <circle cx="32" cy="22" r="11" fill="url(#profileAvatarGlow)" />
-      <path d="M13 54c3.2-10.4 10-16 19-16s15.8 5.6 19 16" fill="url(#profileAvatarGlow)" />
     </svg>
   );
 }
