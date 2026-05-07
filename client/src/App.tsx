@@ -354,11 +354,9 @@ export default function App() {
           socket={socket}
           localStream={localStream}
           matching={matchingPrefs}
-          gemBalance={gemBalance}
           onSpendSwipe={handleSpendSwipe}
           onOpenShop={() => setShowShop(true)}
           onOpenProfile={() => setShowProfile(true)}
-          onEnd={handleEndCall}
           onlineCount={onlineCount}
         />
       )}

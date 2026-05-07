@@ -10,10 +10,8 @@ import type {
   OfferPayload,
 } from "../types";
 import Chat from "./Chat";
-import Controls from "./Controls";
 import GenderAvatar from "./GenderAvatar";
 import LogoMark from "./LogoMark";
-import ReportModal from "./ReportModal";
 import VideoCard from "./VideoCard";
 
 // ─── ICE config ───────────────────────────────────────────────────────────────
@@ -26,11 +24,9 @@ interface Props {
   socket: Socket;
   localStream: MediaStream | null;
   matching: MatchingPreferences;
-  gemBalance: number;
   onSpendSwipe: () => boolean;
   onOpenShop: () => void;
   onOpenProfile: () => void;
-  onEnd: () => void;
   onlineCount: number;
 }
 
@@ -50,21 +46,18 @@ export default function VideoRoom({
   socket,
   localStream,
   matching,
-  gemBalance,
   onSpendSwipe,
   onOpenShop,
   onOpenProfile,
-  onEnd,
   onlineCount,
 }: Props) {
   const [status, setStatus]           = useState<ConnectionStatus>("searching");
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
-  const [isMuted, setIsMuted]         = useState(false);
-  const [isCameraOff, setIsCameraOff] = useState(false);
+  const [isMuted]                    = useState(false);
+  const [isCameraOff]                = useState(false);
   const [isNextLoading, setIsNextLoading] = useState(false);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showChat, setShowChat]       = useState(false);
-  const [showReport, setShowReport]   = useState(false);
   const [swipeDir, setSwipeDir]       = useState<"left" | "right" | null>(null);
 
   const timer = useTimer(status === "connected");
@@ -253,20 +246,6 @@ export default function VideoRoom({
     socket.emit("next", matching);
     setTimeout(() => setIsNextLoading(false), 1200);
   }, [isNextLoading, onSpendSwipe, onOpenShop, socket, closePC, matching]);
-
-  const toggleMute = useCallback(() => {
-    const s = localStreamRef.current; if (!s) return;
-    const next = !isMuted;
-    s.getAudioTracks().forEach((t) => (t.enabled = !next));
-    setIsMuted(next);
-  }, [isMuted]);
-
-  const toggleCamera = useCallback(() => {
-    const s = localStreamRef.current; if (!s) return;
-    const next = !isCameraOff;
-    s.getVideoTracks().forEach((t) => (t.enabled = !next));
-    setIsCameraOff(next);
-  }, [isCameraOff]);
 
   const sendMessage = useCallback((text: string) => {
     const roomId = roomIdRef.current; if (!roomId) return;
@@ -488,21 +467,6 @@ export default function VideoRoom({
       )}
 
       {/* ── Bottom toolbar ───────────────────────────────────────────────────── */}
-      <Controls
-        isMuted={isMuted}
-        isCameraOff={isCameraOff}
-        isNextLoading={isNextLoading}
-        showChat={showChat}
-        gemBalance={gemBalance}
-        onToggleMute={toggleMute}
-        onToggleCamera={toggleCamera}
-        onNext={handleNext}
-        onEnd={onEnd}
-        onToggleChat={() => setShowChat((v) => !v)}
-        onReport={() => setShowReport(true)}
-      />
-
-      {showReport && <ReportModal onClose={() => setShowReport(false)} />}
     </div>
   );
 }
