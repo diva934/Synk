@@ -349,6 +349,7 @@ export function ProfileSheet({
   const username = userEmail?.split("@")[0] || "Profil";
   const countryLabel = PROFILE_COUNTRY_LABELS[matching.profile.country];
   const genderLabel = PROFILE_GENDER_LABELS[matching.profile.gender];
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   return (
     <div className="fixed inset-0 z-[70] bg-black/45 text-white backdrop-blur-sm" onClick={onClose}>
@@ -407,13 +408,191 @@ export function ProfileSheet({
         </div>
 
         <div className="px-8 py-6">
-          <ProfileAction icon="profile" label="Modifier le profil" />
+          <ProfileAction icon="profile" label="Modifier le profil" onClick={() => setShowEditProfile(true)} />
           <ProfileAction icon="settings" label="Plus" />
           <ProfileAction icon="contact" label="Nous contacter" />
           <ProfileAction icon="logout" label="Fermer la session" onClick={onSignOut} />
         </div>
       </div>
+
+      {showEditProfile && (
+        <ProfileEditPage
+          userEmail={userEmail}
+          username={username}
+          matching={matching}
+          onClose={() => setShowEditProfile(false)}
+        />
+      )}
     </div>
+  );
+}
+
+function ProfileEditPage({
+  userEmail,
+  username,
+  matching,
+  onClose,
+}: {
+  userEmail?: string;
+  username: string;
+  matching: MatchingPreferences;
+  onClose: () => void;
+}) {
+  const storageKey = `randomchat:profile-edit:${userEmail || "anonymous"}`;
+  const [bio, setBio] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? (JSON.parse(saved).bio as string) || "" : "";
+    } catch {
+      return "";
+    }
+  });
+  const [hashtag, setHashtag] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? (JSON.parse(saved).hashtag as string) || "Salut" : "Salut";
+    } catch {
+      return "Salut";
+    }
+  });
+
+  const remaining = 250 - bio.length;
+
+  const handleDone = () => {
+    localStorage.setItem(storageKey, JSON.stringify({ bio, hashtag }));
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[90] flex flex-col overflow-hidden bg-[#101010] text-white"
+      onClick={(event) => event.stopPropagation()}
+    >
+      <div className="flex flex-shrink-0 items-center gap-4 px-6 pb-4 pt-12">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10"
+          title="Fermer"
+        >
+          <svg className="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.3}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+          </svg>
+        </button>
+        <h1 className="min-w-0 text-4xl font-black leading-tight tracking-tight">Modifier le profil</h1>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-32 scrollbar-hide">
+        <div className="grid max-w-[25.5rem] grid-cols-2 gap-4">
+          <button
+            type="button"
+            className="relative aspect-[0.74] overflow-hidden rounded-[1.55rem] bg-[#2f2f2f] shadow-2xl shadow-black/35"
+            title="Modifier la photo"
+          >
+            <div className="absolute left-4 top-4 rounded-full bg-black px-3 py-1.5 text-xs font-black">En avant</div>
+            <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_44%_25%,rgba(255,255,255,0.32),transparent_28%),linear-gradient(155deg,#1d1d1d,#353535)]">
+              <GenderAvatar gender={matching.profile.gender} className="h-40 w-40" />
+            </div>
+            <span className="absolute bottom-4 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-white text-black shadow-xl">
+              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="m16.7 3.9 3.4 3.4-10.9 10.9H5.8v-3.4L16.7 3.9Zm1.4-1.4a1.6 1.6 0 0 1 2.3 0l1.1 1.1a1.6 1.6 0 0 1 0 2.3l-.7.7-3.4-3.4.7-.7Z" />
+              </svg>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            className="flex aspect-[0.74] items-center justify-center rounded-[1.55rem] bg-[#343434] text-white transition hover:bg-[#3c3c3c]"
+            title="Ajouter une photo"
+          >
+            <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" d="M12 5v14M5 12h14" />
+            </svg>
+          </button>
+        </div>
+
+        <p className="mt-4 max-w-[38rem] text-base font-medium leading-snug text-white/75">
+          Veuillez ne pas partager de contenu inapproprie ou d'informations personnelles
+          (comme votre numero de telephone ou votre adresse) sur votre profil. Tous les
+          elements telecharges sont verifies et moderes.
+        </p>
+
+        <section className="mt-10">
+          <h2 className="text-3xl font-black tracking-tight">A propos de moi</h2>
+          <div className="relative mt-5 rounded-[1.3rem] bg-[#333]">
+            <textarea
+              value={bio}
+              onChange={(event) => setBio(event.target.value.slice(0, 250))}
+              placeholder="Ecris quelque chose a propos de toi!"
+              className="h-40 w-full resize-none rounded-[1.3rem] bg-transparent px-6 py-7 pr-16 text-2xl font-medium text-white outline-none placeholder:text-white/32"
+              maxLength={250}
+            />
+            <span className="absolute bottom-7 right-6 text-lg font-black text-white/55">{remaining}</span>
+          </div>
+        </section>
+
+        <section className="mt-9">
+          <h2 className="text-3xl font-black tracking-tight">Hashtag</h2>
+          <label className="relative mt-5 flex h-28 items-center rounded-[1.3rem] bg-[#333] px-7">
+            <span className="mr-4 text-4xl font-black text-white/45">#</span>
+            <span className="rounded-full bg-white px-7 py-3 text-2xl font-medium text-black">{hashtag}</span>
+            <select
+              value={hashtag}
+              onChange={(event) => setHashtag(event.target.value)}
+              aria-label="Hashtag"
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            >
+              <option>Salut</option>
+              <option>Chill</option>
+              <option>Discussion</option>
+              <option>Video</option>
+            </select>
+            <svg className="ml-auto h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+            </svg>
+          </label>
+        </section>
+
+        <section className="mt-9">
+          <h2 className="text-3xl font-black tracking-tight">Mes infos</h2>
+          <ProfileInfoRow icon="profile" label={username} />
+          <ProfileInfoRow icon="language" label="Langue" />
+        </section>
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#101010] via-[#101010] to-transparent px-6 pb-8 pt-14">
+        <button
+          type="button"
+          onClick={handleDone}
+          className="pointer-events-auto w-full rounded-full bg-[#00ef9b] py-5 text-2xl font-black text-black shadow-2xl shadow-[#00ef9b]/20 transition active:scale-[0.98]"
+        >
+          Accomplie
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ProfileInfoRow({ icon, label }: { icon: "profile" | "language"; label: string }) {
+  return (
+    <button
+      type="button"
+      className="mt-5 flex h-24 w-full items-center gap-5 rounded-[1.3rem] bg-[#333] px-7 text-left text-2xl font-black text-white transition hover:bg-[#3b3b3b]"
+    >
+      {icon === "language" ? (
+        <svg className="h-8 w-8 flex-shrink-0 text-white/45" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 4h8a3 3 0 0 1 3 3v1h1a4 4 0 0 1 0 8h-.4l1.9 4h-2.3l-.7-1.5h-4.1L9.7 20H7.4l3.2-6.8A3.99 3.99 0 0 1 8 9.5V7H4V4Zm8 3v2.5A1.5 1.5 0 0 0 13.5 11H16a2 2 0 1 0 0-4h-4Zm-.7 9.5h2.4l-1.2-2.7-1.2 2.7Z" />
+        </svg>
+      ) : (
+        <svg className="h-8 w-8 flex-shrink-0 text-white/45" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0H4Z" />
+        </svg>
+      )}
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <svg className="h-7 w-7 flex-shrink-0 text-white/85" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
+      </svg>
+    </button>
   );
 }
 
