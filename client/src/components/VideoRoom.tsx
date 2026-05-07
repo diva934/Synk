@@ -428,11 +428,7 @@ export default function VideoRoom({
             )}
           </div>
 
-          <div
-            className={`absolute bottom-7 right-5 z-20 h-48 w-[7.5rem] overflow-hidden rounded-[32px] border border-white/20 bg-[#1a1a1a] shadow-2xl shadow-black/45 sm:h-60 sm:w-[9.5rem] sm:rounded-[36px] ${
-              status === "connected" ? "block" : "hidden"
-            }`}
-          >
+          <div className="absolute bottom-7 right-5 z-20 h-48 w-[7.5rem] overflow-hidden rounded-[32px] border border-white/20 bg-[#1a1a1a] shadow-2xl shadow-black/45 sm:h-60 sm:w-[9.5rem] sm:rounded-[36px]">
             <VideoCard
               stream={smallStream}
               mirror={smallIsLocal}
