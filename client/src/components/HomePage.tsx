@@ -136,7 +136,7 @@ export default function HomePage({
           )}
 
           <div className="flex-shrink-0 pb-2">
-            <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/5 bg-[#0b1b18]/90 px-5 py-4 shadow-2xl shadow-black/30 backdrop-blur-xl">
+            <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/20 bg-white/[0.09] px-5 py-4 shadow-2xl shadow-black/30 backdrop-blur-2xl">
               <FilterPill
                 icon="gender"
                 label="Genre"

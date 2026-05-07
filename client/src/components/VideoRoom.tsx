@@ -381,9 +381,18 @@ export default function VideoRoom({
               opacity: swipeDir ? 0 : 1,
             }}
           >
+            <VideoCard
+              stream={status === "connected" ? remoteStream : localStream}
+              mirror={status !== "connected"}
+              muted={status !== "connected"}
+              name={status === "connected" ? "Partenaire" : "Vous"}
+              avatarGender={status === "connected" ? partnerAvatarGender : localAvatarGender}
+              className="h-full w-full"
+            />
+
             {/* Searching state */}
             {status === "searching" && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4" style={{ background: "#1a1a1a" }}>
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/10">
                 {/* Animated pulse rings */}
                 <div className="relative flex items-center justify-center">
                   <div className="absolute h-24 w-24 animate-ping rounded-full opacity-10" style={{ background: "#2d6ade" }} />
@@ -414,15 +423,6 @@ export default function VideoRoom({
               </div>
             )}
 
-            <VideoCard
-              stream={remoteStream}
-              mirror={false}
-              muted={false}
-              name={status === "connected" ? "Partenaire" : undefined}
-              avatarGender={partnerAvatarGender}
-              className="h-full w-full"
-            />
-
             {/* Swipe hint */}
             {status === "connected" && (
               <div className="absolute bottom-28 left-1/2 -translate-x-1/2 text-[10px] pointer-events-none md:hidden" style={{ color: "#777" }}>
@@ -432,7 +432,9 @@ export default function VideoRoom({
           </div>
 
           <div
-            className="absolute bottom-4 right-4 z-20 h-36 w-28 overflow-hidden rounded-2xl shadow-2xl md:hidden"
+            className={`absolute bottom-4 right-4 z-20 h-36 w-28 overflow-hidden rounded-2xl shadow-2xl md:hidden ${
+              status === "connected" ? "block" : "hidden"
+            }`}
             style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.18)" }}
           >
             <VideoCard
