@@ -97,6 +97,7 @@ export default function HomePage({
 }: Props) {
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [isStartPressed, setIsStartPressed] = useState(false);
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
   const previewVideoRef = useRef<HTMLVideoElement | null>(null);
 
@@ -190,14 +191,34 @@ export default function HomePage({
 
             <button
               onClick={() => onStart({ video: true, audio: true, matching })}
-              className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+              onPointerDown={() => setIsStartPressed(true)}
+              onPointerUp={() => setIsStartPressed(false)}
+              onPointerLeave={() => setIsStartPressed(false)}
+              onPointerCancel={() => setIsStartPressed(false)}
+              onBlur={() => setIsStartPressed(false)}
+              className={`group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white transition-[box-shadow,opacity,filter] duration-200 hover:opacity-95 ${
+                isStartPressed ? "shadow-[0_0_34px_rgba(45,106,222,0.6)] brightness-110" : "shadow-2xl shadow-black/30"
+              }`}
               style={{ background: "#2d6ade" }}
             >
-              <span className="flex items-center justify-center gap-2">
+              <span
+                className={`pointer-events-none absolute inset-0 bg-white/15 transition-opacity duration-200 ${
+                  isStartPressed ? "animate-pulse opacity-100" : "opacity-0"
+                }`}
+              />
+              <span className="relative flex items-center justify-center gap-3 px-3">
                 <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 6.5A3.5 3.5 0 0 0 1.5 10v4A3.5 3.5 0 0 0 5 17.5h7A3.5 3.5 0 0 0 15.5 14v-.17l3.55 2.28A1.6 1.6 0 0 0 21.5 14.76V9.24a1.6 1.6 0 0 0-2.45-1.35l-3.55 2.28V10A3.5 3.5 0 0 0 12 6.5H5Z" />
                 </svg>
-                Lancer un chat video
+                <span className="whitespace-nowrap">Lancer un chat video</span>
+                <span className="flex items-center gap-1.5 rounded-full bg-black/20 px-3 py-1 text-sm font-black text-white/95 backdrop-blur-xl">
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M12 2 21 9.5 12 22 3 9.5 12 2Z" fill="#66d9ff" />
+                    <path d="M7.4 9.5 12 2l4.6 7.5L12 22 7.4 9.5Z" fill="#1d8cff" />
+                    <path d="M3 9.5h18M7.4 9.5 12 2l4.6 7.5" stroke="white" strokeOpacity=".55" strokeWidth="1.4" strokeLinejoin="round" />
+                  </svg>
+                  {gemBalance.toLocaleString("fr-FR")}
+                </span>
               </span>
             </button>
           </div>
