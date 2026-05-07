@@ -70,7 +70,6 @@ export default function HomePage({
   onClaimDailyGems,
   onSignOut,
 }: Props) {
-  const [video, setVideo] = useState(true);
   const [showShop, setShowShop] = useState(false);
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
 
@@ -110,30 +109,7 @@ export default function HomePage({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col px-6 py-5 md:px-8 md:py-8">
-          <div className="flex flex-1 flex-col justify-center">
-            <div className="mb-5 flex items-center gap-2 text-sm text-green-400 md:mb-8">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-              <span className="font-medium">{onlineCount.toLocaleString()} en ligne maintenant !</span>
-            </div>
-
-            <h1 className="mb-2 text-4xl font-bold leading-tight text-white">
-              Rencontrez des<br />inconnus en video
-            </h1>
-            <p className="mb-5 text-sm leading-relaxed text-white/35 md:mb-8">
-              Connexions video anonymes et aleatoires.
-            </p>
-
-            <DeviceToggle
-              label="Camera"
-              icon={
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.553-2.069A1 1 0 0 1 21 9.382v5.236a1 1 0 0 1-1.447.894L15.75 13.5M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9A2.25 2.25 0 0 0 13.5 5.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25z" />
-                </svg>
-              }
-              enabled={video}
-              onToggle={() => setVideo((v) => !v)}
-            />
-          </div>
+          <div className="flex flex-1" />
 
           {mediaError && (
             <div className="mb-4 rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-xs leading-relaxed text-red-200">
@@ -171,7 +147,7 @@ export default function HomePage({
             </div>
 
             <button
-              onClick={() => onStart({ video, audio: true, matching })}
+              onClick={() => onStart({ video: true, audio: true, matching })}
               className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-black transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
               style={{ background: "#00f29a" }}
             >
@@ -274,44 +250,5 @@ function FilterPill<T extends string>({
         ))}
       </select>
     </label>
-  );
-}
-
-function DeviceToggle({
-  label,
-  icon,
-  enabled,
-  onToggle,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  enabled: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div
-      className="flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3"
-      style={{ background: "#1e1e1e", border: "1px solid #282828" }}
-      onClick={onToggle}
-    >
-      <div className="flex items-center gap-3 text-sm" style={{ color: enabled ? "#ccc" : "#555" }}>
-        <span style={{ color: enabled ? "#888" : "#444" }}>{icon}</span>
-        {label}
-      </div>
-      <div
-        className="relative flex-shrink-0 rounded-full transition-colors duration-200"
-        style={{
-          width: 40,
-          height: 22,
-          background: enabled ? "#2d6ade" : "#2e2e2e",
-          border: "1px solid " + (enabled ? "#2d6ade" : "#3a3a3a"),
-        }}
-      >
-        <div
-          className="absolute top-0.5 rounded-full bg-white shadow transition-all duration-200"
-          style={{ width: 18, height: 18, left: enabled ? 20 : 2 }}
-        />
-      </div>
-    </div>
   );
 }
