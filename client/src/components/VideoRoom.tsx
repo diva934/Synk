@@ -59,10 +59,15 @@ export default function VideoRoom({
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [showChat, setShowChat]       = useState(false);
   const [swipeDir, setSwipeDir]       = useState<"left" | "right" | null>(null);
+  const [isPartnerLarge, setIsPartnerLarge] = useState(false);
 
   const timer = useTimer(status === "connected");
   const localAvatarGender = matching.profile.gender;
   const partnerAvatarGender = matching.filters.gender === "any" ? "unknown" : matching.filters.gender;
+  const largeStream = status === "connected" && isPartnerLarge ? remoteStream : localStream;
+  const largeIsLocal = status !== "connected" || !isPartnerLarge;
+  const smallStream = status === "connected" ? (isPartnerLarge ? localStream : remoteStream) : null;
+  const smallIsLocal = status === "connected" && isPartnerLarge;
 
   // refs
   const localStreamRef     = useRef<MediaStream | null>(localStream);
@@ -169,11 +174,12 @@ export default function VideoRoom({
   useEffect(() => {
     socket.emit("join-queue", matching);
 
-    const onSearching    = () => { setStatus("searching"); setRemoteStream(null); setChatMessages([]); };
+    const onSearching    = () => { setStatus("searching"); setRemoteStream(null); setChatMessages([]); setIsPartnerLarge(false); };
     const onMatched      = async ({ roomId, isInitiator }: MatchedPayload) => {
       roomIdRef.current = roomId;
       iceCandidateBuffer.current = [];
       setChatMessages([]);
+      setIsPartnerLarge(false);
       setStatus("searching");
       if (isInitiator) {
         const pc = createPC();
@@ -243,6 +249,7 @@ export default function VideoRoom({
 
     setIsNextLoading(true);
     closePC(); roomIdRef.current = null; setChatMessages([]);
+    setIsPartnerLarge(false);
     socket.emit("next", matching);
     setTimeout(() => setIsNextLoading(false), 1200);
   }, [isNextLoading, onSpendSwipe, onOpenShop, socket, closePC, matching]);
@@ -366,11 +373,11 @@ export default function VideoRoom({
             }}
           >
             <VideoCard
-              stream={status === "connected" ? remoteStream : localStream}
-              mirror={status !== "connected"}
-              muted={status !== "connected"}
-              name={status === "connected" ? "Partenaire" : "Vous"}
-              avatarGender={status === "connected" ? partnerAvatarGender : localAvatarGender}
+              stream={largeStream}
+              mirror={largeIsLocal}
+              muted={largeIsLocal}
+              name={largeIsLocal ? "Vous" : "Partenaire"}
+              avatarGender={largeIsLocal ? localAvatarGender : partnerAvatarGender}
               className="h-full w-full"
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/65" />
@@ -417,18 +424,17 @@ export default function VideoRoom({
           </div>
 
           <div
-            className={`absolute bottom-4 right-4 z-20 h-36 w-28 overflow-hidden rounded-2xl shadow-2xl md:hidden ${
+            className={`absolute bottom-6 right-5 z-20 h-44 w-28 overflow-hidden rounded-[28px] border border-white/20 bg-[#1a1a1a] shadow-2xl shadow-black/45 sm:h-56 sm:w-36 ${
               status === "connected" ? "block" : "hidden"
             }`}
-            style={{ background: "#1a1a1a", border: "1px solid rgba(255,255,255,0.18)" }}
           >
             <VideoCard
-              stream={localStream}
-              mirror
-              muted
-              name="Vous"
-              isMicOff={isMuted}
-              avatarGender={localAvatarGender}
+              stream={smallStream}
+              mirror={smallIsLocal}
+              muted={smallIsLocal}
+              name={smallIsLocal ? "Vous" : "Partenaire"}
+              isMicOff={smallIsLocal ? isMuted : false}
+              avatarGender={smallIsLocal ? localAvatarGender : partnerAvatarGender}
               className="h-full w-full"
             />
 
@@ -444,6 +450,42 @@ export default function VideoRoom({
               </div>
             )}
           </div>
+        </div>
+
+        <div className="absolute left-4 top-1/2 z-30 flex -translate-y-1/2 flex-col items-center gap-3 rounded-[28px] border border-white/10 bg-black/40 px-3 py-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
+          <button
+            type="button"
+            className="flex h-11 w-11 items-center justify-center rounded-2xl text-white transition hover:bg-white/10"
+            title="Effets"
+          >
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 20 14.5 9.5M13 3l1.2 3.1L17.5 7l-3.3.9L13 11l-1.2-3.1L8.5 7l3.3-.9L13 3ZM19 12l.8 2.2L22 15l-2.2.8L19 18l-.8-2.2L16 15l2.2-.8L19 12Z" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsPartnerLarge((value) => !value)}
+            disabled={status !== "connected"}
+            className="flex h-11 w-11 items-center justify-center rounded-2xl text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+            title="Inverser les videos"
+          >
+            <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 3H4a1 1 0 0 0-1 1v4m0-5 7 7M16 21h4a1 1 0 0 0 1-1v-4m0 5-7-7" />
+            </svg>
+          </button>
+          <span className="h-px w-7 bg-white/20" />
+          <button
+            type="button"
+            onClick={onOpenShop}
+            className="flex h-11 w-11 items-center justify-center rounded-2xl text-white transition hover:bg-white/10"
+            title="Shop"
+          >
+            <svg className="h-7 w-7" viewBox="0 0 64 64" fill="none">
+              <path d="M13 24c0-6 5-11 11-11h16c6 0 11 5 11 11v21c0 4-3 7-7 7H20c-4 0-7-3-7-7V24Z" fill="#2d6ade" />
+              <path d="M23 24v-2a9 9 0 0 1 18 0v2" stroke="white" strokeWidth="5" strokeLinecap="round" />
+              <path d="M20 35h24M20 43h18" stroke="white" strokeOpacity=".75" strokeWidth="4" strokeLinecap="round" />
+            </svg>
+          </button>
         </div>
 
         {/* Chat panel (right side when open) */}
