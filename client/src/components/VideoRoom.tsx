@@ -73,10 +73,13 @@ export default function VideoRoom({
   // refs
   const localStreamRef     = useRef<MediaStream | null>(localStream);
   const pcRef              = useRef<RTCPeerConnection | null>(null);
+  const videoSenderRef     = useRef<RTCRtpSender | null>(null);
   const roomIdRef          = useRef<string | null>(null);
   const iceCandidateBuffer = useRef<RTCIceCandidateInit[]>([]);
+  const isCameraOffRef     = useRef(isCameraOff);
 
   useEffect(() => { localStreamRef.current = localStream; }, [localStream]);
+  useEffect(() => { isCameraOffRef.current = isCameraOff; }, [isCameraOff]);
 
   useEffect(() => {
     let wakeLock: { release: () => Promise<void> } | null = null;
@@ -135,6 +138,7 @@ export default function VideoRoom({
       pcRef.current.onconnectionstatechange = null;
       pcRef.current.close();
       pcRef.current = null;
+      videoSenderRef.current = null;
     }
     if (clearBufferedIce) iceCandidateBuffer.current = [];
     setRemoteStream(null);
@@ -144,7 +148,16 @@ export default function VideoRoom({
     closePC(false);
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     const stream = localStreamRef.current;
-    if (stream) stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+    if (stream) {
+      stream.getTracks().forEach((t) => {
+        if (t.kind === "video") t.enabled = !isCameraOffRef.current;
+        const sender = pc.addTrack(t, stream);
+        if (t.kind === "video") {
+          videoSenderRef.current = sender;
+          if (isCameraOffRef.current) void sender.replaceTrack(null);
+        }
+      });
+    }
     pc.ontrack = (e) => {
       const [stream] = e.streams;
       if (stream) {
@@ -264,9 +277,11 @@ export default function VideoRoom({
     const stream = localStreamRef.current;
     if (!stream) return;
     const next = !isCameraOff;
+    const [videoTrack] = stream.getVideoTracks();
     stream.getVideoTracks().forEach((track) => {
       track.enabled = !next;
     });
+    void videoSenderRef.current?.replaceTrack(next ? null : videoTrack || null);
     setIsCameraOff(next);
   }, [isCameraOff]);
 
@@ -460,7 +475,7 @@ export default function VideoRoom({
                     <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <span className="text-sm" style={{ color: "#555" }}>CamÃ©ra dÃ©sactivÃ©e</span>
+                <span className="text-sm font-semibold text-white/45">Camera coupee</span>
               </div>
             )}
 
@@ -504,7 +519,7 @@ export default function VideoRoom({
                     <line x1="3" y1="3" x2="21" y2="21" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <span className="text-[10px]" style={{ color: "#555" }}>Camera off</span>
+                <span className="px-1 text-center text-[10px] font-semibold leading-tight text-white/45">Camera coupee</span>
               </div>
             )}
           </div>
