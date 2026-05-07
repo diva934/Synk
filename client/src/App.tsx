@@ -60,6 +60,7 @@ export default function App() {
   const [showShop, setShowShop] = useState(false);
   const [page, setPage] = useState<Page>("home");
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [homeCameraRequested, setHomeCameraRequested] = useState(false);
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [onlineCount, setOnlineCount] = useState(0);
   const [gemBalance, setGemBalance] = useState(0);
@@ -226,6 +227,9 @@ export default function App() {
           ? await navigator.mediaDevices.getUserMedia(constraints)
           : new MediaStream();
 
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
+      }
       setLocalStream(stream);
       setPage("room");
     } catch (err) {
@@ -247,12 +251,45 @@ export default function App() {
     }
   };
 
+  const handlePrepareHomeCamera = async () => {
+    if (homeCameraRequested || page !== "home") return;
+    if (localStream?.getVideoTracks().some((track) => track.readyState === "live")) return;
+
+    setHomeCameraRequested(true);
+    setMediaError(null);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" },
+        audio: false,
+      });
+      setLocalStream(stream);
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
+          setMediaError(
+            "AccÃ¨s Ã  la camÃ©ra refusÃ©. Autorisez l'accÃ¨s dans les paramÃ¨tres du navigateur, puis rÃ©essayez."
+          );
+        } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
+          setMediaError("Aucune camÃ©ra trouvÃ©e sur cet appareil.");
+        } else if (err.name === "NotReadableError") {
+          setMediaError(
+            "La camÃ©ra est dÃ©jÃ  utilisÃ©e par une autre application. Fermez-la et rÃ©essayez."
+          );
+        } else {
+          setMediaError(`Impossible d'accÃ©der Ã  la camÃ©ra : ${err.message}`);
+        }
+      }
+    }
+  };
+
   const handleEndCall = () => {
     // Stop all tracks to release the camera/mic
     if (localStream) {
       localStream.getTracks().forEach((track) => track.stop());
     }
     setLocalStream(null);
+    setHomeCameraRequested(false);
     setPage("home");
   };
 
@@ -297,6 +334,8 @@ export default function App() {
       {page === "home" || !socket ? (
         <HomePage
           onStart={handleStart}
+          onPrepareCamera={handlePrepareHomeCamera}
+          previewStream={localStream}
           mediaError={mediaError}
           onlineCount={onlineCount}
           userEmail={session.user.email}

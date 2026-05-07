@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import GenderAvatar from "./GenderAvatar";
 import GemShopModal from "./GemShopModal";
 import LogoMark from "./LogoMark";
@@ -6,6 +6,8 @@ import type { Country, Gender, MatchingPreferences, MediaPreferences } from "../
 
 interface Props {
   onStart: (prefs: MediaPreferences) => void;
+  onPrepareCamera: () => void;
+  previewStream: MediaStream | null;
   mediaError: string | null;
   onlineCount: number;
   userEmail?: string;
@@ -80,6 +82,8 @@ const PROFILE_GENDER_LABELS: Record<Exclude<Gender, "any">, string> = {
 
 export default function HomePage({
   onStart,
+  onPrepareCamera,
+  previewStream,
   mediaError,
   onlineCount,
   userEmail,
@@ -94,15 +98,35 @@ export default function HomePage({
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
+  const previewVideoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     setMatching(matchingPrefs);
   }, [matchingPrefs]);
 
+  useEffect(() => {
+    onPrepareCamera();
+  }, [onPrepareCamera]);
+
+  useEffect(() => {
+    if (!previewVideoRef.current) return;
+    previewVideoRef.current.srcObject = previewStream;
+  }, [previewStream]);
+
   return (
-    <div className="app-screen flex overflow-hidden bg-[#111]">
-      <div className="flex w-full flex-shrink-0 flex-col bg-[#161616] md:w-[420px] lg:w-[480px] md:border-r md:border-[#1e1e1e]">
-        <div className="flex items-center gap-2.5 px-6 py-5" style={{ borderBottom: "1px solid #1e1e1e" }}>
+    <div className="app-screen relative flex overflow-hidden bg-[#05070b]">
+      {previewStream && (
+        <video
+          ref={previewVideoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-black/70" />
+      <div className="relative z-10 flex w-full flex-shrink-0 flex-col bg-transparent md:w-full">
+        <div className="flex items-center gap-2.5 px-6 py-5">
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <LogoMark className="h-11 w-11 flex-shrink-0" />
           </div>
@@ -136,7 +160,7 @@ export default function HomePage({
           )}
 
           <div className="flex-shrink-0 pb-2">
-            <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/20 bg-white/[0.09] px-5 py-4 shadow-2xl shadow-black/30 backdrop-blur-2xl">
+            <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/25 bg-white/[0.11] px-5 py-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
               <FilterPill
                 icon="gender"
                 label="Genre"
@@ -180,7 +204,7 @@ export default function HomePage({
         </div>
       </div>
 
-      <div className="hidden flex-1 flex-col overflow-hidden md:flex">
+      <div className="hidden">
         <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #1a1a1a" }}>
           <span className="text-sm font-medium text-white/30">Apercu en ligne</span>
           <span className="flex items-center gap-1.5 text-xs text-white/25">
