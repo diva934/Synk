@@ -56,7 +56,7 @@ export default function VideoCard({
           {loading || searching ? (
             <>
               <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-white/70" />
-              <span className="text-sm text-white/50">
+              <span className="px-2 text-center text-xs font-semibold leading-tight text-white/50 sm:text-sm">
                 {searching ? "Recherche d'un partenaire…" : "Connexion…"}
               </span>
             </>

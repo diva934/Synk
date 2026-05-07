@@ -387,26 +387,6 @@ export default function VideoRoom({
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/65" />
 
-            {/* Searching state */}
-            {status === "searching" && (
-              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 bg-black/10">
-                {/* Animated pulse rings */}
-                <div className="relative flex items-center justify-center">
-                  <div className="absolute h-24 w-24 animate-ping rounded-full opacity-10" style={{ background: "#2d6ade" }} />
-                  <div className="absolute h-16 w-16 animate-ping rounded-full opacity-20 animation-delay-150" style={{ background: "#2d6ade" }} />
-                  <div className="relative flex h-12 w-12 items-center justify-center rounded-full" style={{ background: "#2d6ade" }}>
-                    <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                    </svg>
-                  </div>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm font-medium text-white/60">Recherche d'un partenaire…</p>
-                  <p className="mt-1 text-xs" style={{ color: "#444" }}>{onlineCount} utilisateur{onlineCount !== 1 ? "s" : ""} en ligne</p>
-                </div>
-              </div>
-            )}
-
             {/* Partner left overlay */}
             {status === "partner-left" && (
               <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3" style={{ background: "rgba(0,0,0,0.85)" }}>
@@ -435,6 +415,7 @@ export default function VideoRoom({
               muted={smallIsLocal}
               name={smallIsLocal ? "Vous" : "Partenaire"}
               isMicOff={smallIsLocal ? isMuted : false}
+              searching={status === "searching" && !smallStream}
               avatarGender={smallIsLocal ? localAvatarGender : partnerAvatarGender}
               className="h-full w-full"
             />
