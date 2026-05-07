@@ -498,30 +498,30 @@ function ProfileMorePage({
       className="fixed inset-0 z-[90] flex flex-col overflow-hidden bg-[#101010] text-white"
       onClick={(event) => event.stopPropagation()}
     >
-      <div className="flex flex-shrink-0 items-center gap-4 px-6 pb-8 pt-14">
+      <div className="flex flex-shrink-0 items-center gap-3 px-5 pb-6 pt-12">
         <button
           type="button"
           onClick={onClose}
-          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10"
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10"
           title="Fermer"
         >
-          <svg className="h-10 w-10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+          <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
         </button>
-        <h1 className="min-w-0 text-5xl font-black leading-none tracking-tight">Plus</h1>
+        <h1 className="min-w-0 text-4xl font-black leading-none tracking-tight">Plus</h1>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-7 pb-16 scrollbar-hide">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-12 scrollbar-hide">
         <MoreSectionTitle label="Activité" />
         <MoreRow label="Mes Gemmes" value={gemBalance.toLocaleString()} gem />
         <MoreRow label="Mes Items" />
 
-        <MoreSectionTitle label="Compte et sécurité" className="mt-12" />
+        <MoreSectionTitle label="Compte et sécurité" className="mt-9" />
         <MoreRow label="Email" sublabel={userEmail || "Non connecté"} />
         <MoreRow label="Paramètres du compte" />
 
-        <MoreSectionTitle label="Notification" className="mt-12" />
+        <MoreSectionTitle label="Notification" className="mt-9" />
         <MoreToggleRow
           label="Notification de marketing"
           checked={marketingNotifications}
@@ -539,7 +539,7 @@ function ProfileMorePage({
           onChange={setNewFollowers}
         />
 
-        <MoreSectionTitle label="Préférences" className="mt-12" />
+        <MoreSectionTitle label="Préférences" className="mt-9" />
       </div>
     </div>
   );
@@ -547,7 +547,7 @@ function ProfileMorePage({
 
 function MoreSectionTitle({ label, className = "" }: { label: string; className?: string }) {
   return (
-    <h2 className={`mb-7 text-4xl font-black tracking-tight text-white/20 ${className}`}>
+    <h2 className={`mb-4 text-2xl font-black tracking-tight text-white/20 ${className}`}>
       {label}
     </h2>
   );
@@ -567,19 +567,19 @@ function MoreRow({
   return (
     <button
       type="button"
-      className="flex min-h-[5.9rem] w-full items-center gap-5 text-left transition active:scale-[0.99]"
+      className="flex min-h-[4.4rem] w-full items-center gap-4 text-left transition active:scale-[0.99]"
     >
       <div className="min-w-0 flex-1">
-        <div className="text-[2rem] font-medium leading-tight text-white">{label}</div>
+        <div className="text-xl font-medium leading-tight text-white">{label}</div>
         {sublabel && (
-          <div className="mt-2 truncate text-[1.6rem] font-medium leading-tight text-white/40">
+          <div className="mt-1.5 truncate text-base font-medium leading-tight text-white/40">
             {sublabel}
           </div>
         )}
       </div>
       {value !== undefined && (
-        <div className="flex items-center gap-3 text-[2rem] font-semibold text-white">
-          {gem && <GemMiniIcon className="h-9 w-9" />}
+        <div className="flex items-center gap-2 text-xl font-semibold text-white">
+          {gem && <GemMiniIcon className="h-7 w-7" />}
           <span>{value}</span>
         </div>
       )}
@@ -600,11 +600,11 @@ function MoreToggleRow({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex min-h-[6.4rem] items-center gap-5 py-2">
+    <div className="flex min-h-[4.8rem] items-center gap-4 py-1.5">
       <div className="min-w-0 flex-1">
-        <div className="text-[2rem] font-medium leading-tight text-white">{label}</div>
+        <div className="text-xl font-medium leading-tight text-white">{label}</div>
         {description && (
-          <p className="mt-3 max-w-[33rem] text-[1.55rem] font-medium leading-tight text-white/40">
+          <p className="mt-2 max-w-[21rem] text-base font-medium leading-snug text-white/40">
             {description}
           </p>
         )}
@@ -612,14 +612,14 @@ function MoreToggleRow({
       <button
         type="button"
         onClick={() => onChange(!checked)}
-        className={`relative h-16 w-28 flex-shrink-0 rounded-full p-1.5 transition ${
+        className={`relative h-9 w-16 flex-shrink-0 rounded-full p-1 transition ${
           checked ? "bg-[#58ea8c]" : "bg-[#303030]"
         }`}
         aria-pressed={checked}
       >
         <span
-          className={`block h-[3.25rem] w-[3.25rem] rounded-full bg-white shadow-lg transition ${
-            checked ? "translate-x-12" : "translate-x-0"
+          className={`block h-7 w-7 rounded-full bg-white shadow-lg transition ${
+            checked ? "translate-x-7" : "translate-x-0"
           }`}
         />
       </button>
@@ -629,7 +629,7 @@ function MoreToggleRow({
 
 function ChevronIcon() {
   return (
-    <svg className="h-9 w-9 flex-shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+    <svg className="h-6 w-6 flex-shrink-0 text-white/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
       <path strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
     </svg>
   );
