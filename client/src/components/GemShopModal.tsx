@@ -170,9 +170,7 @@ export default function GemShopModal({
                 key={pack.gems}
                 type="button"
                 onClick={() => onBuy(total)}
-                className={`grid w-full grid-cols-[28%_1fr_auto] overflow-hidden rounded-2xl bg-[#303030] text-left transition active:scale-[0.99] ${
-                  pack.featured ? "ring-1 ring-[#f6d76b]/35" : ""
-                }`}
+                className="grid w-full grid-cols-[28%_1fr_auto] overflow-hidden rounded-2xl bg-[#303030] text-left transition active:scale-[0.99]"
               >
                 <div className="min-h-[6.9rem]">
                   <GemArtwork level={level} />

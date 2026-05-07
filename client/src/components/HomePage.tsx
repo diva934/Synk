@@ -138,7 +138,7 @@ export default function HomePage({
           <div className="flex-shrink-0 pb-2">
             <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/5 bg-[#0b1b18]/90 px-5 py-4 shadow-2xl shadow-black/30 backdrop-blur-xl">
               <FilterPill
-                icon="⚧"
+                icon="gender"
                 label="Genre"
                 value={matching.filters.gender}
                 onChange={(value) =>
@@ -151,7 +151,7 @@ export default function HomePage({
               />
               <span className="mx-4 h-7 w-px bg-white/15" />
               <FilterPill
-                icon="🌍"
+                icon="globe"
                 label="Pays"
                 value={matching.filters.country}
                 onChange={(value) =>
@@ -166,8 +166,8 @@ export default function HomePage({
 
             <button
               onClick={() => onStart({ video: true, audio: true, matching })}
-              className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-black transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
-              style={{ background: "#00f29a" }}
+              className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+              style={{ background: "#2d6ade" }}
             >
               <span className="flex items-center justify-center gap-2">
                 <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -253,7 +253,7 @@ function FilterPill<T extends string>({
   onChange,
   options,
 }: {
-  icon: string;
+  icon: "gender" | "globe";
   label: string;
   value: T;
   onChange: (value: T) => void;
@@ -262,7 +262,7 @@ function FilterPill<T extends string>({
   return (
     <label className="relative block min-w-0 cursor-pointer">
       <span className="pointer-events-none flex items-center justify-center gap-2 text-lg font-black text-white">
-        <span className="text-xl leading-none">{icon}</span>
+        <FilterIcon type={icon} />
         <span>{label}</span>
       </span>
       <select
@@ -278,6 +278,34 @@ function FilterPill<T extends string>({
         ))}
       </select>
     </label>
+  );
+}
+
+function FilterIcon({ type }: { type: "gender" | "globe" }) {
+  if (type === "globe") {
+    return (
+      <svg className="h-6 w-6 flex-shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="filterGlobe" x1="16" y1="10" x2="48" y2="56" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#24b9ff" />
+            <stop offset="1" stopColor="#102d91" />
+          </linearGradient>
+        </defs>
+        <circle cx="32" cy="32" r="27" fill="url(#filterGlobe)" />
+        <path d="M17 19c8 2 12 2 17-2 3 5 1 9-4 10-3 1-6-1-9 2-3 3-4 7-2 11-5-2-9-7-9-14 0-3 1-5 7-7Z" fill="white" />
+        <path d="M41 16c7 3 11 9 12 16-4-1-8 0-10 3-3 4-6 4-10 2 2-7 8-8 7-14 0-3-1-5 1-7Z" fill="white" opacity="0.95" />
+        <path d="M30 43c5 1 7 4 7 9-4 2-10 2-15-1 1-5 4-8 8-8Z" fill="white" opacity="0.95" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="h-7 w-7 flex-shrink-0" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+      <circle cx="24" cy="35" r="13" stroke="#ef4b87" strokeWidth="6" />
+      <path d="M24 48v12M16 56h16" stroke="#ef4b87" strokeWidth="6" strokeLinecap="round" />
+      <circle cx="40" cy="24" r="13" stroke="#35aef4" strokeWidth="6" />
+      <path d="M49 15h10v10M49 15l10 10" stroke="#35aef4" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }
 
