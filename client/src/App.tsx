@@ -225,23 +225,36 @@ export default function App() {
         localStorage.setItem(`randomchat:matching:${session.user.id}`, JSON.stringify(prefs.matching));
       }
 
-      const constraints: MediaStreamConstraints = {
-        video: prefs.video
-          ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }
-          : false,
-        audio: prefs.audio,
-      };
+      const liveVideoTracks =
+        prefs.video
+          ? localStream?.getVideoTracks().filter((track) => track.readyState === "live") || []
+          : [];
+      const needsNewVideo = prefs.video && liveVideoTracks.length === 0;
+      const needsAudio = prefs.audio;
 
-      // If both are disabled, use a blank stream so WebRTC still works
-      const stream =
-        prefs.video || prefs.audio
-          ? await navigator.mediaDevices.getUserMedia(constraints)
+      const requestedStream =
+        needsNewVideo || needsAudio
+          ? await navigator.mediaDevices.getUserMedia({
+              video: needsNewVideo
+                ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }
+                : false,
+              audio: needsAudio,
+            })
           : new MediaStream();
 
-      if (localStream) {
-        localStream.getTracks().forEach((track) => track.stop());
-      }
-      setLocalStream(stream);
+      const nextStream = new MediaStream([
+        ...liveVideoTracks,
+        ...requestedStream.getVideoTracks(),
+        ...requestedStream.getAudioTracks(),
+      ]);
+
+      localStream?.getTracks().forEach((track) => {
+        if (!nextStream.getTracks().includes(track)) {
+          track.stop();
+        }
+      });
+
+      setLocalStream(nextStream);
       setPage("room");
     } catch (err) {
       if (err instanceof Error) {
@@ -263,8 +276,9 @@ export default function App() {
   };
 
   const handlePrepareHomeCamera = async () => {
-    if (homeCameraRequested || page !== "home") return;
+    if (page !== "home") return;
     if (localStream?.getVideoTracks().some((track) => track.readyState === "live")) return;
+    if (homeCameraRequested) return;
 
     setHomeCameraRequested(true);
     setMediaError(null);
@@ -276,6 +290,7 @@ export default function App() {
       });
       setLocalStream(stream);
     } catch (err) {
+      setHomeCameraRequested(false);
       if (err instanceof Error) {
         if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
           setMediaError(
