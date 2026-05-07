@@ -7,6 +7,9 @@
     @apply h-full w-full m-0 p-0;
     overflow: hidden;
     overscroll-behavior: none;
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 
   body {
