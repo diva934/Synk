@@ -28,6 +28,7 @@ interface Props {
   onSpendSwipe: () => boolean;
   onOpenShop: (notice?: string) => void;
   onOpenProfile: () => void;
+  profilePhotoUrl?: string;
   onlineCount: number;
 }
 
@@ -87,6 +88,7 @@ export default function VideoRoom({
   onSpendSwipe,
   onOpenShop,
   onOpenProfile,
+  profilePhotoUrl,
   onlineCount,
 }: Props) {
   const [status, setStatus]           = useState<ConnectionStatus>("searching");
@@ -454,7 +456,11 @@ export default function VideoRoom({
             className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white shadow-2xl shadow-black/25 backdrop-blur-xl transition hover:bg-white/15"
             title="Profil"
           >
-            <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />
+            {profilePhotoUrl ? (
+              <img src={profilePhotoUrl} alt="" className="h-8 w-8 rounded-full object-cover" />
+            ) : (
+              <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />
+            )}
           </button>
         </div>
       </nav>

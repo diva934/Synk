@@ -17,6 +17,8 @@ interface Props {
   dailyReward: number;
   onBuyGemPack: (gems: number) => void;
   onClaimDailyGems: () => void;
+  profileEdit: ProfileEditDraft;
+  onProfileEditSave: (draft: ProfileEditDraft) => void;
   onSignOut: () => void;
 }
 
@@ -93,6 +95,8 @@ export default function HomePage({
   dailyReward,
   onBuyGemPack,
   onClaimDailyGems,
+  profileEdit,
+  onProfileEditSave,
   onSignOut,
 }: Props) {
   const [showShop, setShowShop] = useState(false);
@@ -151,7 +155,11 @@ export default function HomePage({
               className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white transition hover:bg-white/10"
               title="Profil"
             >
-              <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />
+              {profileEdit.primaryPhoto ? (
+                <img src={profileEdit.primaryPhoto} alt="" className="h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />
+              )}
             </button>
           </div>
         </div>
@@ -262,6 +270,8 @@ export default function HomePage({
           userEmail={userEmail}
           matching={matching}
           onlineCount={onlineCount}
+          initialEdit={profileEdit}
+          onProfileEditSave={onProfileEditSave}
           onClose={() => setShowProfile(false)}
           onSignOut={onSignOut}
         />
@@ -374,7 +384,7 @@ function FilterIcon({ type }: { type: "gender" | "globe" }) {
   );
 }
 
-type ProfileEditDraft = {
+export type ProfileEditDraft = {
   bio?: string;
   hashtag?: string;
   displayName?: string;
@@ -392,7 +402,7 @@ function getProfileEditStorageKey(userEmail?: string) {
   return `randomchat:profile-edit:${userEmail || "anonymous"}`;
 }
 
-function readProfileEditDraft(userEmail?: string): ProfileEditDraft {
+export function readProfileEditDraft(userEmail?: string): ProfileEditDraft {
   try {
     const saved = localStorage.getItem(getProfileEditStorageKey(userEmail));
     return saved ? (JSON.parse(saved) as ProfileEditDraft) : {};
@@ -405,20 +415,29 @@ export function ProfileSheet({
   userEmail,
   matching,
   onlineCount,
+  initialEdit,
+  onProfileEditSave,
   onClose,
   onSignOut,
 }: {
   userEmail?: string;
   matching: MatchingPreferences;
   onlineCount: number;
+  initialEdit?: ProfileEditDraft;
+  onProfileEditSave?: (draft: ProfileEditDraft) => void;
   onClose: () => void;
   onSignOut: () => void;
 }) {
-  const [profileEdit, setProfileEdit] = useState<ProfileEditDraft>(() => readProfileEditDraft(userEmail));
+  const [profileEdit, setProfileEdit] = useState<ProfileEditDraft>(() => initialEdit || readProfileEditDraft(userEmail));
 
   useEffect(() => {
-    setProfileEdit(readProfileEditDraft(userEmail));
-  }, [userEmail]);
+    setProfileEdit(initialEdit || readProfileEditDraft(userEmail));
+  }, [userEmail, initialEdit]);
+
+  const handleProfileEditSave = (draft: ProfileEditDraft) => {
+    setProfileEdit(draft);
+    onProfileEditSave?.(draft);
+  };
 
   const username = profileEdit.displayName?.trim() || userEmail?.split("@")[0] || "Profil";
   const countryLabel = PROFILE_COUNTRY_LABELS[matching.profile.country];
@@ -504,7 +523,7 @@ export function ProfileSheet({
           username={username}
           matching={matching}
           initialEdit={profileEdit}
-          onSave={setProfileEdit}
+          onSave={handleProfileEditSave}
           onClose={() => setShowEditProfile(false)}
         />
       )}

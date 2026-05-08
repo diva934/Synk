@@ -3,7 +3,7 @@ import type { Session } from "@supabase/supabase-js";
 import { io, Socket } from "socket.io-client";
 import AuthPage from "./components/AuthPage";
 import GemShopModal from "./components/GemShopModal";
-import HomePage, { ProfileSheet } from "./components/HomePage";
+import HomePage, { ProfileSheet, readProfileEditDraft, type ProfileEditDraft } from "./components/HomePage";
 import LoginSuccessModal from "./components/LoginSuccessModal";
 import ProfileSetupPage from "./components/ProfileSetupPage";
 import SafariInstallPrompt from "./components/SafariInstallPrompt";
@@ -68,6 +68,7 @@ export default function App() {
   const [gemBalance, setGemBalance] = useState(0);
   const [dailyClaimDate, setDailyClaimDate] = useState<string | null>(null);
   const [matchingPrefs, setMatchingPrefs] = useState<MatchingPreferences>(DEFAULT_MATCHING);
+  const [profileEdit, setProfileEdit] = useState<ProfileEditDraft>({});
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -110,6 +111,7 @@ export default function App() {
       setShowProfile(false);
       setDailyClaimDate(null);
       setMatchingPrefs(DEFAULT_MATCHING);
+      setProfileEdit({});
       setNeedsProfileSetup(false);
       return;
     }
@@ -117,6 +119,7 @@ export default function App() {
     const storedGems = localStorage.getItem(`randomchat:gems:${session.user.id}`);
     setGemBalance(storedGems ? Number(storedGems) || 0 : 0);
     setDailyClaimDate(localStorage.getItem(`randomchat:daily-gems:${session.user.id}`));
+    setProfileEdit(readProfileEditDraft(session.user.email));
 
     const pendingProfile = readPendingProfile();
     const storedProfile = readStoredProfile(session.user.id);
@@ -367,6 +370,8 @@ export default function App() {
           dailyReward={DAILY_REWARD}
           onBuyGemPack={handleBuyGemPack}
           onClaimDailyGems={handleClaimDailyGems}
+          profileEdit={profileEdit}
+          onProfileEditSave={setProfileEdit}
           onSignOut={handleSignOut}
         />
       ) : (
@@ -377,6 +382,7 @@ export default function App() {
           onSpendSwipe={handleSpendSwipe}
           onOpenShop={openShop}
           onOpenProfile={() => setShowProfile(true)}
+          profilePhotoUrl={profileEdit.primaryPhoto}
           onlineCount={onlineCount}
         />
       )}
@@ -402,6 +408,8 @@ export default function App() {
           userEmail={session.user.email}
           matching={matchingPrefs}
           onlineCount={onlineCount}
+          initialEdit={profileEdit}
+          onProfileEditSave={setProfileEdit}
           onClose={() => setShowProfile(false)}
           onSignOut={handleSignOut}
         />
