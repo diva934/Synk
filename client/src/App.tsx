@@ -403,6 +403,10 @@ export default function App() {
           matching={matchingPrefs}
           onlineCount={onlineCount}
           gemBalance={gemBalance}
+          onOpenShop={() => {
+            setShowProfile(false);
+            openShop();
+          }}
           onClose={() => setShowProfile(false)}
           onSignOut={handleSignOut}
         />

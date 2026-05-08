@@ -263,6 +263,10 @@ export default function HomePage({
           matching={matching}
           onlineCount={onlineCount}
           gemBalance={gemBalance}
+          onOpenShop={() => {
+            setShowProfile(false);
+            setShowShop(true);
+          }}
           onClose={() => setShowProfile(false)}
           onSignOut={onSignOut}
         />
@@ -380,6 +384,7 @@ export function ProfileSheet({
   matching,
   onlineCount,
   gemBalance = 0,
+  onOpenShop,
   onClose,
   onSignOut,
 }: {
@@ -387,6 +392,7 @@ export function ProfileSheet({
   matching: MatchingPreferences;
   onlineCount: number;
   gemBalance?: number;
+  onOpenShop?: () => void;
   onClose: () => void;
   onSignOut: () => void;
 }) {
@@ -473,6 +479,7 @@ export function ProfileSheet({
         <ProfileMorePage
           userEmail={userEmail}
           gemBalance={gemBalance}
+          onOpenShop={onOpenShop}
           onClose={() => setShowMorePage(false)}
         />
       )}
@@ -483,10 +490,12 @@ export function ProfileSheet({
 function ProfileMorePage({
   userEmail,
   gemBalance,
+  onOpenShop,
   onClose,
 }: {
   userEmail?: string;
   gemBalance: number;
+  onOpenShop?: () => void;
   onClose: () => void;
 }) {
   const [marketingNotifications, setMarketingNotifications] = useState(false);
@@ -514,7 +523,7 @@ function ProfileMorePage({
 
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-12 scrollbar-hide">
         <MoreSectionTitle label="Activité" />
-        <MoreRow label="Mes Gemmes" value={gemBalance.toLocaleString()} gem />
+        <MoreRow label="Mes Gemmes" value={gemBalance.toLocaleString()} gem onClick={onOpenShop} />
         <MoreRow label="Mes Items" />
 
         <MoreSectionTitle label="Compte et sécurité" className="mt-9" />
@@ -539,7 +548,6 @@ function ProfileMorePage({
           onChange={setNewFollowers}
         />
 
-        <MoreSectionTitle label="Préférences" className="mt-9" />
       </div>
     </div>
   );
@@ -558,15 +566,18 @@ function MoreRow({
   sublabel,
   value,
   gem = false,
+  onClick,
 }: {
   label: string;
   sublabel?: string;
   value?: string;
   gem?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="flex min-h-[4.4rem] w-full items-center gap-4 text-left transition active:scale-[0.99]"
     >
       <div className="min-w-0 flex-1">
