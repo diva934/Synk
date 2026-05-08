@@ -262,11 +262,6 @@ export default function HomePage({
           userEmail={userEmail}
           matching={matching}
           onlineCount={onlineCount}
-          gemBalance={gemBalance}
-          onOpenShop={() => {
-            setShowProfile(false);
-            setShowShop(true);
-          }}
           onClose={() => setShowProfile(false)}
           onSignOut={onSignOut}
         />
@@ -383,16 +378,12 @@ export function ProfileSheet({
   userEmail,
   matching,
   onlineCount,
-  gemBalance = 0,
-  onOpenShop,
   onClose,
   onSignOut,
 }: {
   userEmail?: string;
   matching: MatchingPreferences;
   onlineCount: number;
-  gemBalance?: number;
-  onOpenShop?: () => void;
   onClose: () => void;
   onSignOut: () => void;
 }) {
@@ -478,8 +469,6 @@ export function ProfileSheet({
       {showMorePage && (
         <ProfileMorePage
           userEmail={userEmail}
-          gemBalance={gemBalance}
-          onOpenShop={onOpenShop}
           onClose={() => setShowMorePage(false)}
         />
       )}
@@ -489,13 +478,9 @@ export function ProfileSheet({
 
 function ProfileMorePage({
   userEmail,
-  gemBalance,
-  onOpenShop,
   onClose,
 }: {
   userEmail?: string;
-  gemBalance: number;
-  onOpenShop?: () => void;
   onClose: () => void;
 }) {
   const [marketingNotifications, setMarketingNotifications] = useState(false);
@@ -522,11 +507,7 @@ function ProfileMorePage({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-12 scrollbar-hide">
-        <MoreSectionTitle label="Activité" />
-        <MoreRow label="Mes Gemmes" value={gemBalance.toLocaleString()} gem onClick={onOpenShop} />
-        <MoreRow label="Mes Items" />
-
-        <MoreSectionTitle label="Compte et sécurité" className="mt-9" />
+        <MoreSectionTitle label="Compte et sécurité" />
         <MoreRow label="Email" sublabel={userEmail || "Non connecté"} />
         <MoreRow label="Paramètres du compte" />
 

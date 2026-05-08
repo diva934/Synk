@@ -402,11 +402,6 @@ export default function App() {
           userEmail={session.user.email}
           matching={matchingPrefs}
           onlineCount={onlineCount}
-          gemBalance={gemBalance}
-          onOpenShop={() => {
-            setShowProfile(false);
-            openShop();
-          }}
           onClose={() => setShowProfile(false)}
           onSignOut={handleSignOut}
         />
