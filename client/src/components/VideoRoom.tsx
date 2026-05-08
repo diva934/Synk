@@ -467,10 +467,52 @@ export default function VideoRoom({
 
       {/* ── Main area ────────────────────────────────────────────────────────── */}
       <div className="absolute inset-0 flex overflow-hidden">
+        <div className="hidden h-full w-full grid-cols-2 items-center gap-6 px-8 pb-8 pt-24 lg:grid">
+          <div
+            className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
+            style={{ width: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 8rem))" }}
+          >
+            <VideoCard
+              stream={localStream}
+              mirror
+              muted
+              isMicOff={isMuted}
+              avatarGender={localAvatarGender}
+              className="h-full w-full"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/45" />
+            {isCameraOff && <CameraOffOverlay />}
+          </div>
+
+          <div
+            className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
+            style={{ width: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 8rem))" }}
+          >
+            <VideoCard
+              stream={remoteStream}
+              searching={status === "searching" && !remoteStream}
+              avatarGender={partnerAvatarGender}
+              className="h-full w-full"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/45" />
+            {isPartnerCameraOff && <CameraOffOverlay />}
+
+            {status === "partner-left" && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/85">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#2a2a2a]">
+                  <svg className="h-8 w-8 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white/55">Partenaire deconnecte</p>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* ── TWO BIG SQUARES SIDE BY SIDE ────────────────────────────────── */}
         <div
-          className="relative flex flex-1"
+          className="relative flex flex-1 lg:hidden"
           style={{ touchAction: "pan-y" }}
           onPointerDown={handlePointerDown}
           onPointerUp={handlePointerUp}
