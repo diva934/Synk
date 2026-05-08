@@ -374,6 +374,33 @@ function FilterIcon({ type }: { type: "gender" | "globe" }) {
   );
 }
 
+type ProfileEditDraft = {
+  bio?: string;
+  hashtag?: string;
+  displayName?: string;
+  language?: string;
+  primaryPhoto?: string;
+  secondaryPhoto?: string;
+};
+
+const DEFAULT_PROFILE_HASHTAG = "Salut";
+const DEFAULT_PROFILE_LANGUAGE = "Français";
+const PROFILE_HASHTAGS = ["Salut", "Chill", "Discussion", "Video"];
+const PROFILE_LANGUAGES = ["Français", "English", "Español", "Deutsch"];
+
+function getProfileEditStorageKey(userEmail?: string) {
+  return `randomchat:profile-edit:${userEmail || "anonymous"}`;
+}
+
+function readProfileEditDraft(userEmail?: string): ProfileEditDraft {
+  try {
+    const saved = localStorage.getItem(getProfileEditStorageKey(userEmail));
+    return saved ? (JSON.parse(saved) as ProfileEditDraft) : {};
+  } catch {
+    return {};
+  }
+}
+
 export function ProfileSheet({
   userEmail,
   matching,
@@ -387,7 +414,13 @@ export function ProfileSheet({
   onClose: () => void;
   onSignOut: () => void;
 }) {
-  const username = userEmail?.split("@")[0] || "Profil";
+  const [profileEdit, setProfileEdit] = useState<ProfileEditDraft>(() => readProfileEditDraft(userEmail));
+
+  useEffect(() => {
+    setProfileEdit(readProfileEditDraft(userEmail));
+  }, [userEmail]);
+
+  const username = profileEdit.displayName?.trim() || userEmail?.split("@")[0] || "Profil";
   const countryLabel = PROFILE_COUNTRY_LABELS[matching.profile.country];
   const genderLabel = PROFILE_GENDER_LABELS[matching.profile.gender];
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -413,7 +446,11 @@ export function ProfileSheet({
 
           <div className="absolute left-1/2 top-20 -translate-x-1/2">
             <div className="flex h-20 w-20 items-center justify-center rounded-full bg-black/75 shadow-2xl">
-              <GenderAvatar gender={matching.profile.gender} className="h-16 w-16" />
+              {profileEdit.primaryPhoto ? (
+                <img src={profileEdit.primaryPhoto} alt="" className="h-16 w-16 rounded-full object-cover" />
+              ) : (
+                <GenderAvatar gender={matching.profile.gender} className="h-16 w-16" />
+              )}
             </div>
           </div>
 
@@ -428,7 +465,11 @@ export function ProfileSheet({
 
         <div className="border-b border-white/10 px-8 py-6">
           <div className="flex items-center gap-4">
-            <GenderAvatar gender={matching.profile.gender} className="h-14 w-14 flex-shrink-0" />
+            {profileEdit.primaryPhoto ? (
+              <img src={profileEdit.primaryPhoto} alt="" className="h-14 w-14 flex-shrink-0 rounded-full object-cover" />
+            ) : (
+              <GenderAvatar gender={matching.profile.gender} className="h-14 w-14 flex-shrink-0" />
+            )}
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-lg font-black">
                 <span className="truncate">{username}</span>
@@ -462,6 +503,8 @@ export function ProfileSheet({
           userEmail={userEmail}
           username={username}
           matching={matching}
+          initialEdit={profileEdit}
+          onSave={setProfileEdit}
           onClose={() => setShowEditProfile(false)}
         />
       )}
@@ -644,36 +687,69 @@ function ProfileEditPage({
   userEmail,
   username,
   matching,
+  initialEdit,
+  onSave,
   onClose,
 }: {
   userEmail?: string;
   username: string;
   matching: MatchingPreferences;
+  initialEdit: ProfileEditDraft;
+  onSave: (draft: ProfileEditDraft) => void;
   onClose: () => void;
 }) {
-  const storageKey = `randomchat:profile-edit:${userEmail || "anonymous"}`;
-  const [bio, setBio] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? (JSON.parse(saved).bio as string) || "" : "";
-    } catch {
-      return "";
-    }
-  });
-  const [hashtag, setHashtag] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? (JSON.parse(saved).hashtag as string) || "Salut" : "Salut";
-    } catch {
-      return "Salut";
-    }
-  });
+  const storageKey = getProfileEditStorageKey(userEmail);
+  const primaryPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  const secondaryPhotoInputRef = useRef<HTMLInputElement | null>(null);
+  const [displayName, setDisplayName] = useState(initialEdit.displayName || username);
+  const [bio, setBio] = useState(initialEdit.bio || "");
+  const [hashtag, setHashtag] = useState(initialEdit.hashtag || DEFAULT_PROFILE_HASHTAG);
+  const [language, setLanguage] = useState(initialEdit.language || DEFAULT_PROFILE_LANGUAGE);
+  const [primaryPhoto, setPrimaryPhoto] = useState(initialEdit.primaryPhoto || "");
+  const [secondaryPhoto, setSecondaryPhoto] = useState(initialEdit.secondaryPhoto || "");
+  const [showNameEditor, setShowNameEditor] = useState(false);
+  const [showLanguagePicker, setShowLanguagePicker] = useState(false);
 
   const remaining = 250 - bio.length;
 
   const handleDone = () => {
-    localStorage.setItem(storageKey, JSON.stringify({ bio, hashtag }));
+    const draft = {
+      bio,
+      hashtag,
+      displayName: displayName.trim() || username,
+      language,
+      primaryPhoto,
+      secondaryPhoto,
+    };
+    localStorage.setItem(storageKey, JSON.stringify(draft));
+    onSave(draft);
     onClose();
+  };
+
+  const handlePhotoFile = (file: File | undefined, slot: "primary" | "secondary") => {
+    if (!file || !file.type.startsWith("image/")) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const image = new Image();
+      image.onload = () => {
+        const maxSide = 640;
+        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        if (!context) return;
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+        const photo = canvas.toDataURL("image/jpeg", 0.82);
+        if (slot === "primary") setPrimaryPhoto(photo);
+        else setSecondaryPhoto(photo);
+      };
+      image.src = String(reader.result || "");
+    };
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -681,33 +757,38 @@ function ProfileEditPage({
       className="fixed inset-0 z-[90] flex flex-col overflow-hidden bg-[#101010] text-white"
       onClick={(event) => event.stopPropagation()}
     >
-      <div className="flex flex-shrink-0 items-center gap-4 px-6 pb-4 pt-12">
+      <div className="flex flex-shrink-0 items-center gap-3 px-5 pb-4 pt-12">
         <button
           type="button"
           onClick={onClose}
-          className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10"
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10"
           title="Fermer"
         >
-          <svg className="h-9 w-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.3}>
+          <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
           </svg>
         </button>
-        <h1 className="min-w-0 text-4xl font-black leading-tight tracking-tight">Modifier le profil</h1>
+        <h1 className="min-w-0 text-3xl font-black leading-tight tracking-tight">Modifier le profil</h1>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-32 scrollbar-hide">
-        <div className="grid max-w-[25.5rem] grid-cols-2 gap-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-24 scrollbar-hide">
+        <div className="grid max-w-[20rem] grid-cols-2 gap-3">
           <button
             type="button"
-            className="relative aspect-[0.74] overflow-hidden rounded-[1.55rem] bg-[#2f2f2f] shadow-2xl shadow-black/35"
+            onClick={() => primaryPhotoInputRef.current?.click()}
+            className="relative aspect-[0.78] overflow-hidden rounded-[1.15rem] bg-[#2f2f2f] shadow-2xl shadow-black/35"
             title="Modifier la photo"
           >
-            <div className="absolute left-4 top-4 rounded-full bg-black px-3 py-1.5 text-xs font-black">En avant</div>
+            <div className="absolute left-3 top-3 z-10 rounded-full bg-black px-2.5 py-1 text-[0.65rem] font-black">En avant</div>
             <div className="absolute inset-0 flex items-center justify-center bg-[radial-gradient(circle_at_44%_25%,rgba(255,255,255,0.32),transparent_28%),linear-gradient(155deg,#1d1d1d,#353535)]">
-              <GenderAvatar gender={matching.profile.gender} className="h-40 w-40" />
+              {primaryPhoto ? (
+                <img src={primaryPhoto} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <GenderAvatar gender={matching.profile.gender} className="h-28 w-28" />
+              )}
             </div>
-            <span className="absolute bottom-4 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-white text-black shadow-xl">
-              <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <span className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-white text-black shadow-xl">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="m16.7 3.9 3.4 3.4-10.9 10.9H5.8v-3.4L16.7 3.9Zm1.4-1.4a1.6 1.6 0 0 1 2.3 0l1.1 1.1a1.6 1.6 0 0 1 0 2.3l-.7.7-3.4-3.4.7-.7Z" />
               </svg>
             </span>
@@ -715,69 +796,124 @@ function ProfileEditPage({
 
           <button
             type="button"
-            className="flex aspect-[0.74] items-center justify-center rounded-[1.55rem] bg-[#343434] text-white transition hover:bg-[#3c3c3c]"
+            onClick={() => secondaryPhotoInputRef.current?.click()}
+            className="flex aspect-[0.78] items-center justify-center overflow-hidden rounded-[1.15rem] bg-[#343434] text-white transition hover:bg-[#3c3c3c]"
             title="Ajouter une photo"
           >
-            <svg className="h-12 w-12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-              <path strokeLinecap="round" d="M12 5v14M5 12h14" />
-            </svg>
+            {secondaryPhoto ? (
+              <img src={secondaryPhoto} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" d="M12 5v14M5 12h14" />
+              </svg>
+            )}
           </button>
+          <input
+            ref={primaryPhotoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              handlePhotoFile(event.target.files?.[0], "primary");
+              event.currentTarget.value = "";
+            }}
+          />
+          <input
+            ref={secondaryPhotoInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(event) => {
+              handlePhotoFile(event.target.files?.[0], "secondary");
+              event.currentTarget.value = "";
+            }}
+          />
         </div>
 
-        <p className="mt-4 max-w-[38rem] text-base font-medium leading-snug text-white/75">
+        <p className="mt-4 max-w-[34rem] text-sm font-medium leading-snug text-white/75">
           Veuillez ne pas partager de contenu inapproprie ou d'informations personnelles
           (comme votre numero de telephone ou votre adresse) sur votre profil. Tous les
           elements telecharges sont verifies et moderes.
         </p>
 
-        <section className="mt-10">
-          <h2 className="text-3xl font-black tracking-tight">A propos de moi</h2>
-          <div className="relative mt-5 rounded-[1.3rem] bg-[#333]">
+        <section className="mt-8">
+          <h2 className="text-2xl font-black tracking-tight">A propos de moi</h2>
+          <div className="relative mt-4 rounded-[1.1rem] bg-[#333]">
             <textarea
               value={bio}
               onChange={(event) => setBio(event.target.value.slice(0, 250))}
               placeholder="Ecris quelque chose a propos de toi!"
-              className="h-40 w-full resize-none rounded-[1.3rem] bg-transparent px-6 py-7 pr-16 text-2xl font-medium text-white outline-none placeholder:text-white/32"
+              className="h-28 w-full resize-none rounded-[1.1rem] bg-transparent px-5 py-5 pr-14 text-lg font-medium text-white outline-none placeholder:text-white/32"
               maxLength={250}
             />
-            <span className="absolute bottom-7 right-6 text-lg font-black text-white/55">{remaining}</span>
+            <span className="absolute bottom-5 right-5 text-sm font-black text-white/55">{remaining}</span>
           </div>
         </section>
 
-        <section className="mt-9">
-          <h2 className="text-3xl font-black tracking-tight">Hashtag</h2>
-          <label className="relative mt-5 flex h-28 items-center rounded-[1.3rem] bg-[#333] px-7">
-            <span className="mr-4 text-4xl font-black text-white/45">#</span>
-            <span className="rounded-full bg-white px-7 py-3 text-2xl font-medium text-black">{hashtag}</span>
+        <section className="mt-7">
+          <h2 className="text-2xl font-black tracking-tight">Hashtag</h2>
+          <label className="relative mt-4 flex h-16 items-center rounded-[1.1rem] bg-[#333] px-5">
+            <span className="mr-3 text-2xl font-black text-white/45">#</span>
+            <span className="rounded-full bg-white px-4 py-2 text-base font-medium text-black">{hashtag}</span>
             <select
               value={hashtag}
               onChange={(event) => setHashtag(event.target.value)}
               aria-label="Hashtag"
               className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             >
-              <option>Salut</option>
-              <option>Chill</option>
-              <option>Discussion</option>
-              <option>Video</option>
+              {PROFILE_HASHTAGS.map((option) => (
+                <option key={option}>{option}</option>
+              ))}
             </select>
-            <svg className="ml-auto h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
+            <svg className="ml-auto h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
             </svg>
           </label>
         </section>
 
-        <section className="mt-9">
-          <h2 className="text-3xl font-black tracking-tight">Mes infos</h2>
-          <ProfileInfoRow icon="profile" label={username} />
-          <ProfileInfoRow icon="language" label="Langue" />
+        <section className="mt-7">
+          <h2 className="text-2xl font-black tracking-tight">Mes infos</h2>
+          <ProfileInfoRow icon="profile" label={displayName} onClick={() => setShowNameEditor((value) => !value)} />
+          {showNameEditor && (
+            <input
+              value={displayName}
+              onChange={(event) => setDisplayName(event.target.value.slice(0, 32))}
+              className="mt-3 h-14 w-full rounded-[1.1rem] bg-[#333] px-5 text-lg font-bold text-white outline-none ring-1 ring-white/10 focus:ring-white/25"
+              placeholder="Ton pseudo"
+            />
+          )}
+          <ProfileInfoRow
+            icon="language"
+            label={`Langue - ${language}`}
+            onClick={() => setShowLanguagePicker((value) => !value)}
+          />
+          {showLanguagePicker && (
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {PROFILE_LANGUAGES.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    setLanguage(option);
+                    setShowLanguagePicker(false);
+                  }}
+                  className={`h-12 rounded-full text-sm font-black transition ${
+                    language === option ? "bg-white text-black" : "bg-[#333] text-white"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          )}
         </section>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#101010] via-[#101010] to-transparent px-6 pb-8 pt-14">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-[#101010] via-[#101010] to-transparent px-6 pb-7 pt-12">
         <button
           type="button"
           onClick={handleDone}
-          className="pointer-events-auto w-full rounded-full bg-[#00ef9b] py-5 text-2xl font-black text-black shadow-2xl shadow-[#00ef9b]/20 transition active:scale-[0.98]"
+          className="pointer-events-auto w-full rounded-full bg-[#00ef9b] py-4 text-lg font-black text-black shadow-2xl shadow-[#00ef9b]/20 transition active:scale-[0.98]"
         >
           Accomplie
         </button>
@@ -786,23 +922,32 @@ function ProfileEditPage({
   );
 }
 
-function ProfileInfoRow({ icon, label }: { icon: "profile" | "language"; label: string }) {
+function ProfileInfoRow({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: "profile" | "language";
+  label: string;
+  onClick?: () => void;
+}) {
   return (
     <button
       type="button"
-      className="mt-5 flex h-24 w-full items-center gap-5 rounded-[1.3rem] bg-[#333] px-7 text-left text-2xl font-black text-white transition hover:bg-[#3b3b3b]"
+      onClick={onClick}
+      className="mt-4 flex h-16 w-full items-center gap-4 rounded-[1.1rem] bg-[#333] px-5 text-left text-lg font-black text-white transition hover:bg-[#3b3b3b]"
     >
       {icon === "language" ? (
-        <svg className="h-8 w-8 flex-shrink-0 text-white/45" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="h-6 w-6 flex-shrink-0 text-white/45" viewBox="0 0 24 24" fill="currentColor">
           <path d="M4 4h8a3 3 0 0 1 3 3v1h1a4 4 0 0 1 0 8h-.4l1.9 4h-2.3l-.7-1.5h-4.1L9.7 20H7.4l3.2-6.8A3.99 3.99 0 0 1 8 9.5V7H4V4Zm8 3v2.5A1.5 1.5 0 0 0 13.5 11H16a2 2 0 1 0 0-4h-4Zm-.7 9.5h2.4l-1.2-2.7-1.2 2.7Z" />
         </svg>
       ) : (
-        <svg className="h-8 w-8 flex-shrink-0 text-white/45" viewBox="0 0 24 24" fill="currentColor">
+        <svg className="h-6 w-6 flex-shrink-0 text-white/45" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 21a8 8 0 0 1 16 0H4Z" />
         </svg>
       )}
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <svg className="h-7 w-7 flex-shrink-0 text-white/85" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+      <svg className="h-5 w-5 flex-shrink-0 text-white/85" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="m9 6 6 6-6 6" />
       </svg>
     </button>
