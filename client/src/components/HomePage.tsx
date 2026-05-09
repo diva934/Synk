@@ -23,12 +23,15 @@ interface Props {
 }
 
 const PREVIEW_CARDS = [
-  { name: "Sofia, 24", flag: "FR", online: true, tall: false },
-  { name: "Marco, 27", flag: "IT", online: true, tall: true },
-  { name: "Yuna, 22", flag: "KR", online: false, tall: false },
-  { name: "Alex, 25", flag: "US", online: true, tall: true },
-  { name: "Lea, 23", flag: "BE", online: true, tall: false },
-  { name: "Carlos, 29", flag: "BR", online: false, tall: true },
+  { name: "Sofia, 24", flag: "🇫🇷", online: true,  tall: false },
+  { name: "Marco, 27", flag: "🇮🇹", online: true,  tall: true  },
+  { name: "Yuna, 22",  flag: "🇰🇷", online: false, tall: false },
+  { name: "Alex, 25",  flag: "🇺🇸", online: true,  tall: true  },
+  { name: "Lea, 23",   flag: "🇧🇪", online: true,  tall: false },
+  { name: "Carlos, 29",flag: "🇧🇷", online: false, tall: true  },
+  { name: "Hana, 21",  flag: "🇯🇵", online: true,  tall: false },
+  { name: "Diego, 26", flag: "🇲🇽", online: true,  tall: true  },
+  { name: "Emma, 23",  flag: "🇩🇪", online: false, tall: false },
 ];
 
 const GRADIENTS = [
@@ -38,6 +41,9 @@ const GRADIENTS = [
   "linear-gradient(135deg,#3b2a1f,#d97706)",
   "linear-gradient(135deg,#3b1f2a,#db2777)",
   "linear-gradient(135deg,#1f2b3b,#0891b2)",
+  "linear-gradient(135deg,#2d1f3b,#9333ea)",
+  "linear-gradient(135deg,#1f3b35,#0d9488)",
+  "linear-gradient(135deg,#3b2f1f,#ea580c)",
 ];
 
 const COUNTRIES: Array<{ value: Country; label: string }> = [
@@ -287,12 +293,12 @@ export default function HomePage({
           </div>
 
           {/* RIGHT PANEL — masonry preview grid */}
-          <div className="flex-1 overflow-y-auto bg-[#0a0a0a] scrollbar-hide">
-            <div className="columns-3 gap-1.5 p-1.5 space-y-1.5">
+          <div className="flex-1 overflow-y-auto bg-[#111111] scrollbar-hide">
+            <div className="columns-3 gap-[3px] p-[3px] space-y-[3px]">
               {PREVIEW_CARDS.map((card, i) => (
                 <div
                   key={card.name}
-                  className="break-inside-avoid relative overflow-hidden rounded-2xl"
+                  className="break-inside-avoid relative overflow-hidden rounded-xl"
                   style={{
                     background: GRADIENTS[i % GRADIENTS.length],
                     height: card.tall ? 320 : 220,
