@@ -130,6 +130,21 @@ export default function HomePage({
     setDismissedMediaError(null);
   }, [mediaError]);
 
+  // Handle Stripe payment return
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+    if (payment === "success") {
+      const gems = parseInt(params.get("gems") ?? "0", 10);
+      if (gems > 0) onBuyGemPack(gems);
+      // Clean URL without reload
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (payment === "cancelled") {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="app-screen relative flex overflow-hidden bg-[#05070b]">
 

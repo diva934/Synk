@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 interface GemPack {
   gems: number;
   bonus: number;
@@ -13,6 +15,20 @@ interface Props {
   onBuy: (gems: number) => void;
   onClaimDaily: () => void;
   onClose: () => void;
+}
+
+async function redirectToCheckout(gems: number): Promise<void> {
+  const res = await fetch("/api/create-checkout-session", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ gems }),
+  });
+  if (!res.ok) {
+    const { error } = await res.json().catch(() => ({ error: "Erreur réseau" }));
+    throw new Error(error ?? "Erreur inconnue");
+  }
+  const { url } = await res.json();
+  window.location.href = url;
 }
 
 const GEM_PACKS: GemPack[] = [
@@ -102,6 +118,20 @@ export default function GemShopModal({
   onClaimDaily,
   onClose,
 }: Props) {
+  const [loadingPack, setLoadingPack] = useState<number | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+
+  async function handleBuy(gems: number) {
+    setLoadingPack(gems);
+    setCheckoutError(null);
+    try {
+      await redirectToCheckout(gems);
+    } catch (err: unknown) {
+      setCheckoutError(err instanceof Error ? err.message : "Erreur de paiement");
+      setLoadingPack(null);
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-3 backdrop-blur-md">
       <div className="flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden rounded-3xl border border-white/10 bg-[#202020] text-white shadow-2xl">
@@ -130,6 +160,11 @@ export default function GemShopModal({
         </div>
 
         <div className="flex-1 space-y-3 overflow-y-auto px-4 pb-4 scrollbar-hide">
+          {checkoutError && (
+            <div className="rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-400">
+              ⚠️ {checkoutError}
+            </div>
+          )}
           {notice && (
             <div className="rounded-2xl border border-[#38bdf8]/35 bg-[#0b64d8]/20 px-4 py-3 shadow-[0_16px_35px_rgba(14,116,255,0.22)]">
               <div className="flex items-center gap-3">
@@ -187,8 +222,9 @@ export default function GemShopModal({
               <button
                 key={pack.gems}
                 type="button"
-                onClick={() => onBuy(total)}
-                className="grid w-full grid-cols-[28%_1fr_auto] overflow-hidden rounded-2xl bg-[#303030] text-left transition active:scale-[0.99]"
+                onClick={() => handleBuy(pack.gems)}
+                disabled={loadingPack !== null}
+                className="grid w-full grid-cols-[28%_1fr_auto] overflow-hidden rounded-2xl bg-[#303030] text-left transition active:scale-[0.99] disabled:opacity-60"
               >
                 <div className="min-h-[6.9rem]">
                   <GemArtwork level={level} />
@@ -204,9 +240,18 @@ export default function GemShopModal({
                 </div>
 
                 <div className="flex items-center pr-4">
-                  <span className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-black">
-                    {pack.price}
-                  </span>
+                  {loadingPack === pack.gems ? (
+                    <span className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-black">
+                      <svg className="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                      </svg>
+                    </span>
+                  ) : (
+                    <span className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-black">
+                      {pack.price}
+                    </span>
+                  )}
                 </div>
               </button>
             );
