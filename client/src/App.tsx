@@ -108,8 +108,7 @@ export default function App() {
       return;
     }
 
-    const ageVerified = localStorage.getItem(`randomchat:age-verified:${session.user.id}`);
-    if (!ageVerified) {
+    if (!session.user.user_metadata?.age_verified) {
       setShowAgeVerification(true);
     }
 
@@ -386,8 +385,8 @@ export default function App() {
       )}
       {showAgeVerification && (
         <LoginSuccessModal onContinue={() => {
-          localStorage.setItem(`randomchat:age-verified:${session.user.id}`, "true");
           setShowAgeVerification(false);
+          void supabase?.auth.updateUser({ data: { age_verified: true } });
         }} />
       )}
       {showShop && (
