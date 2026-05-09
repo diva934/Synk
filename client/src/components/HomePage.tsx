@@ -9,6 +9,7 @@ interface Props {
   onPrepareCamera: () => void;
   previewStream: MediaStream | null;
   mediaError: string | null;
+  onClearMediaError: () => void;
   onlineCount: number;
   userEmail?: string;
   gemBalance: number;
@@ -93,6 +94,7 @@ export default function HomePage({
   onPrepareCamera,
   previewStream,
   mediaError,
+  onClearMediaError,
   onlineCount,
   userEmail,
   gemBalance,
@@ -361,15 +363,18 @@ export default function HomePage({
       )}
 
       {showMediaPermissionPrompt && (
-        <MediaPermissionPrompt />
+        <MediaPermissionPrompt onDismiss={onClearMediaError} />
       )}
     </div>
   );
 }
 
-function MediaPermissionPrompt() {
+function MediaPermissionPrompt({ onDismiss }: { onDismiss: () => void }) {
   return (
-    <div className="absolute inset-0 z-[80] flex flex-col bg-black/82 text-white backdrop-blur-[2px]">
+    <div
+      className="absolute inset-0 z-[80] flex flex-col bg-black/82 text-white backdrop-blur-[2px]"
+      onClick={onDismiss}
+    >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_46%,rgba(255,255,255,0.08),transparent_24%),linear-gradient(to_bottom,rgba(0,0,0,0.45),rgba(0,0,0,0.94))]" />
 
       <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-7 pb-8 pt-24">
@@ -387,6 +392,9 @@ function MediaPermissionPrompt() {
           <p className="mx-auto mt-28 max-w-[43rem] text-[1.35rem] font-semibold leading-tight text-white/62 sm:mt-12 sm:text-2xl">
             Cliquez sur l'icone a cote de la barre d'adresse, choisissez "Parametres du site",
             et reglez la camera et le microphone sur "Autoriser".
+          </p>
+          <p className="mt-10 text-sm font-semibold text-white/30">
+            Appuyez n'importe où pour réessayer
           </p>
         </div>
       </div>

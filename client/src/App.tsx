@@ -365,6 +365,7 @@ export default function App() {
           onPrepareCamera={handlePrepareHomeCamera}
           previewStream={localStream}
           mediaError={mediaError}
+          onClearMediaError={() => { setMediaError(null); setHomeCameraRequested(false); }}
           onlineCount={onlineCount}
           userEmail={session.user.email}
           gemBalance={gemBalance}
