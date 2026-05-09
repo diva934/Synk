@@ -467,10 +467,10 @@ export default function VideoRoom({
 
       {/* ── Main area ────────────────────────────────────────────────────────── */}
       <div className="absolute inset-0 flex overflow-hidden">
-        <div className="hidden h-full w-full grid-cols-2 items-center gap-6 px-8 pb-8 pt-24 lg:grid">
+        <div className="hidden h-full w-full grid-cols-2 items-center gap-2 px-3 pb-3 pt-20 lg:grid">
           <div
             className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
-            style={{ width: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 8rem))" }}
+            style={{ width: "min(calc((100vw - 2rem) / 2), calc(100vh - 6rem))" }}
           >
             <VideoCard
               stream={localStream}
@@ -486,7 +486,7 @@ export default function VideoRoom({
 
           <div
             className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
-            style={{ width: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 8rem))" }}
+            style={{ width: "min(calc((100vw - 2rem) / 2), calc(100vh - 6rem))" }}
           >
             <VideoCard
               stream={remoteStream}
