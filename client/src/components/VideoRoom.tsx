@@ -101,6 +101,9 @@ export default function VideoRoom({
   const [showChat, setShowChat]       = useState(false);
   const [swipeDir, setSwipeDir]       = useState<"left" | "right" | null>(null);
   const [isPartnerLarge, setIsPartnerLarge] = useState(false);
+  const [showReport, setShowReport]   = useState(false);
+  const [isBanned, setIsBanned]       = useState(false);
+  const partnerSocketIdRef            = useRef<string | null>(null);
 
   const timer = useTimer(status === "connected");
   const localAvatarGender = matching.profile.gender;
@@ -232,12 +235,14 @@ export default function VideoRoom({
     socket.emit("join-queue", matching);
 
     const onSearching    = () => { setStatus("searching"); setRemoteStream(null); setChatMessages([]); setIsPartnerLarge(false); setIsPartnerCameraOff(false); };
-    const onMatched      = async ({ roomId, isInitiator }: MatchedPayload) => {
+    const onMatched      = async ({ roomId, isInitiator, partnerSocketId }: MatchedPayload) => {
       roomIdRef.current = roomId;
+      partnerSocketIdRef.current = partnerSocketId;
       iceCandidateBuffer.current = [];
       setChatMessages([]);
       setIsPartnerLarge(false);
       setIsPartnerCameraOff(false);
+      setShowReport(false);
       setStatus("searching");
       socket.emit("camera-state", { roomId, isCameraOff: isCameraOffRef.current });
       if (isInitiator) {
@@ -275,9 +280,10 @@ export default function VideoRoom({
       else iceCandidateBuffer.current.push(candidate);
     };
     const onPartnerLeft  = () => {
-      closePC(); roomIdRef.current = null; setStatus("partner-left"); setIsPartnerCameraOff(false);
+      closePC(); roomIdRef.current = null; partnerSocketIdRef.current = null; setStatus("partner-left"); setIsPartnerCameraOff(false);
       setTimeout(() => socket.emit("join-queue", matching), 2000);
     };
+    const onBanned = () => { setIsBanned(true); };
     const onChatMessage  = ({ message }: { message: string }) =>
       setChatMessages((p) => [...p, { id: Date.now().toString(), from: "partner", text: message, timestamp: Date.now() }]);
     const onCameraState = ({ isCameraOff }: CameraStatePayload) => {
@@ -292,9 +298,10 @@ export default function VideoRoom({
     socket.on("partner-left",  onPartnerLeft);
     socket.on("chat-message",  onChatMessage);
     socket.on("camera-state",  onCameraState);
+    socket.on("banned",        onBanned);
 
     return () => {
-      ["searching","matched","offer","answer","ice-candidate","partner-left","chat-message","camera-state"]
+      ["searching","matched","offer","answer","ice-candidate","partner-left","chat-message","camera-state","banned"]
         .forEach((ev) => socket.off(ev));
       socket.emit("leave-queue");
       closePC();
@@ -630,6 +637,22 @@ export default function VideoRoom({
               {isCameraOff && <path strokeLinecap="round" d="M3 3l18 18" />}
             </svg>
           </button>
+          {status === "connected" && (
+            <>
+              <span className="h-px w-7 bg-white/20" />
+              <button
+                type="button"
+                onClick={() => setShowReport(true)}
+                className="flex h-10 w-10 items-center justify-center rounded-full text-orange-400 transition hover:bg-white/10"
+                title="Signaler"
+                aria-label="Signaler ce comportement"
+              >
+                <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M3 3v18M3 5l14 4-14 4" />
+                </svg>
+              </button>
+            </>
+          )}
         </div>
 
         {/* Chat panel (right side when open) */}
@@ -652,7 +675,103 @@ export default function VideoRoom({
         </div>
       )}
 
+      {/* ── Report modal ─────────────────────────────────────────────────────── */}
+      {showReport && (
+        <ReportModal
+          onClose={() => setShowReport(false)}
+          onConfirm={(reason) => {
+            const roomId = roomIdRef.current;
+            const targetSocketId = partnerSocketIdRef.current;
+            if (roomId && targetSocketId) {
+              socket.emit("report", { roomId, reason, targetSocketId });
+            }
+            setShowReport(false);
+            handleNext();
+          }}
+        />
+      )}
+
+      {/* ── Banned screen ────────────────────────────────────────────────────── */}
+      {isBanned && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-5 bg-black/95 text-white px-8">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/20 ring-1 ring-red-500/40">
+            <svg className="h-10 w-10 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" />
+              <path strokeLinecap="round" d="M4.93 4.93l14.14 14.14" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-black text-center">Accès suspendu</h2>
+          <p className="text-sm text-white/55 text-center max-w-xs leading-relaxed">
+            Ton compte a reçu plusieurs signalements pour comportement inapproprié. Tu as été déconnecté de la plateforme.
+          </p>
+        </div>
+      )}
+
       {/* ── Bottom toolbar ───────────────────────────────────────────────────── */}
+    </div>
+  );
+}
+
+// ─── Report modal ────────────────────────────────────────────────────────────
+
+const REPORT_REASONS = [
+  { id: "nudity",     label: "Nudité / contenu sexuel",    icon: "🔞" },
+  { id: "minor",      label: "Personne mineure",           icon: "🧒" },
+  { id: "harassment", label: "Harcèlement / insultes",     icon: "🚫" },
+  { id: "spam",       label: "Spam / comportement bizarre",icon: "⚠️" },
+];
+
+function ReportModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: (reason: string) => void }) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  return (
+    <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm px-3 pb-4 sm:pb-0">
+      <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-[#1a1a1a] text-white shadow-2xl overflow-hidden">
+        <div className="px-5 pt-5 pb-3">
+          <h3 className="text-lg font-black">Signaler ce comportement</h3>
+          <p className="mt-1 text-xs text-white/45">Sélectionne la raison du signalement</p>
+        </div>
+
+        <div className="px-3 pb-3 space-y-1.5">
+          {REPORT_REASONS.map((r) => (
+            <button
+              key={r.id}
+              type="button"
+              onClick={() => setSelected(r.id)}
+              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition ${
+                selected === r.id
+                  ? "bg-red-500/20 ring-1 ring-red-500/40 text-red-300"
+                  : "bg-white/5 hover:bg-white/10 text-white/80"
+              }`}
+            >
+              <span className="text-base">{r.icon}</span>
+              {r.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-2 px-3 pb-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-xl bg-white/8 py-3 text-sm font-bold text-white/60 transition hover:bg-white/12"
+          >
+            Annuler
+          </button>
+          <button
+            type="button"
+            onClick={() => selected && onConfirm(selected)}
+            disabled={!selected}
+            className={`flex-1 rounded-xl py-3 text-sm font-black transition ${
+              selected
+                ? "bg-red-500 hover:bg-red-400 text-white"
+                : "bg-white/10 text-white/25 cursor-not-allowed"
+            }`}
+          >
+            Signaler & Passer
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

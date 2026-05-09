@@ -16,6 +16,7 @@ export interface ChatMessage {
 export interface MatchedPayload {
   roomId: string;
   isInitiator: boolean;
+  partnerSocketId: string;
 }
 
 export interface OfferPayload {

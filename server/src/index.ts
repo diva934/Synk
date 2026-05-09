@@ -81,6 +81,11 @@ const socketToRoom = new Map<string, string>();
 
 const socketPreferences = new Map<string, MatchingPreferences>();
 
+// socketId → number of times reported this session
+const reportCounts = new Map<string, number>();
+
+const REPORT_BAN_THRESHOLD = 3;
+
 let onlineCount = 0;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -100,8 +105,8 @@ function matchUsers(initiatorId: string, receiverId: string): void {
   socketToRoom.set(initiatorId, roomId);
   socketToRoom.set(receiverId, roomId);
 
-  io.to(initiatorId).emit("matched", { roomId, isInitiator: true });
-  io.to(receiverId).emit("matched", { roomId, isInitiator: false });
+  io.to(initiatorId).emit("matched", { roomId, isInitiator: true, partnerSocketId: receiverId });
+  io.to(receiverId).emit("matched", { roomId, isInitiator: false, partnerSocketId: initiatorId });
 }
 
 /**
@@ -271,6 +276,30 @@ io.on("connection", (socket: Socket) => {
     relayToPartner(roomId, "chat-message", { message });
   });
 
+  // ── Moderation ───────────────────────────────────────────────────────────────
+
+  socket.on("report", ({ roomId, reason, targetSocketId }: { roomId: string; reason: string; targetSocketId: string }) => {
+    const room = rooms.get(roomId);
+    if (!room || !room.users.includes(socket.id)) return;
+    if (!room.users.includes(targetSocketId)) return;
+
+    const count = (reportCounts.get(targetSocketId) || 0) + 1;
+    reportCounts.set(targetSocketId, count);
+
+    console.log(`[report] ${socket.id} → ${targetSocketId} (${reason}) — total: ${count}`);
+
+    if (count >= REPORT_BAN_THRESHOLD) {
+      const targetSocket = io.sockets.sockets.get(targetSocketId);
+      if (targetSocket) {
+        targetSocket.emit("banned");
+        leaveCurrentRoom(targetSocketId);
+        removeFromQueue(targetSocketId);
+        reportCounts.delete(targetSocketId);
+        targetSocket.disconnect(true);
+      }
+    }
+  });
+
   // ── Disconnect ───────────────────────────────────────────────────────────────
 
   socket.on("disconnect", () => {
@@ -279,6 +308,7 @@ io.on("connection", (socket: Socket) => {
     removeFromQueue(socket.id);
     leaveCurrentRoom(socket.id);
     socketPreferences.delete(socket.id);
+    reportCounts.delete(socket.id);
   });
 });
 
