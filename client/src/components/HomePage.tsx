@@ -295,7 +295,7 @@ export default function HomePage({
                   className="break-inside-avoid relative overflow-hidden rounded-2xl"
                   style={{
                     background: GRADIENTS[i % GRADIENTS.length],
-                    height: card.tall ? 260 : 185,
+                    height: card.tall ? 320 : 220,
                   }}
                 >
                   {card.online && (
