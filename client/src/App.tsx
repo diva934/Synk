@@ -19,7 +19,6 @@ type Page = "home" | "room";
 const SWIPE_COST = 9;
 const DAILY_REWARD = 850;
 const PENDING_PROFILE_KEY = "randomchat:pending-profile";
-const SIGNUP_SUCCESS_KEY = "randomchat:signup-success-pending";
 
 function getTodayKey(): string {
   const now = new Date();
@@ -50,16 +49,11 @@ function readPendingProfile(): MatchProfile | null {
   }
 }
 
-function consumeSignupSuccessFlag(): boolean {
-  if (localStorage.getItem(SIGNUP_SUCCESS_KEY) !== "true") return false;
-  localStorage.removeItem(SIGNUP_SUCCESS_KEY);
-  return true;
-}
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const [showLoginSuccess, setShowLoginSuccess] = useState(false);
+  const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [showShop, setShowShop] = useState(false);
   const [shopNotice, setShopNotice] = useState<string | null>(null);
   const [showProfile, setShowProfile] = useState(false);
@@ -85,17 +79,11 @@ export default function App() {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
       setAuthLoading(false);
-      if (data.session && consumeSignupSuccessFlag()) {
-        setShowLoginSuccess(true);
-      }
     });
 
-    const { data: listener } = supabase.auth.onAuthStateChange((event, nextSession) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setAuthLoading(false);
-      if (event === "SIGNED_IN" && consumeSignupSuccessFlag()) {
-        setShowLoginSuccess(true);
-      }
     });
 
     return () => {
@@ -115,8 +103,14 @@ export default function App() {
       setDailyClaimDate(null);
       setMatchingPrefs(DEFAULT_MATCHING);
       setProfileEdit({});
+      setShowAgeVerification(false);
       setNeedsProfileSetup(false);
       return;
+    }
+
+    const ageVerified = localStorage.getItem(`randomchat:age-verified:${session.user.id}`);
+    if (!ageVerified) {
+      setShowAgeVerification(true);
     }
 
     const storedGems = localStorage.getItem(`randomchat:gems:${session.user.id}`);
@@ -390,8 +384,11 @@ export default function App() {
           onlineCount={onlineCount}
         />
       )}
-      {showLoginSuccess && (
-        <LoginSuccessModal onContinue={() => setShowLoginSuccess(false)} />
+      {showAgeVerification && (
+        <LoginSuccessModal onContinue={() => {
+          localStorage.setItem(`randomchat:age-verified:${session.user.id}`, "true");
+          setShowAgeVerification(false);
+        }} />
       )}
       {showShop && (
         <GemShopModal
