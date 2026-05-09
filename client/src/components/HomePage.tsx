@@ -104,6 +104,7 @@ export default function HomePage({
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
   const [dismissedMediaError, setDismissedMediaError] = useState<string | null>(null);
   const previewVideoRef = useRef<HTMLVideoElement | null>(null);
+  const desktopVideoRef = useRef<HTMLVideoElement | null>(null);
   const showMediaPermissionPrompt = Boolean(mediaError && dismissedMediaError !== mediaError);
 
   useEffect(() => {
@@ -115,8 +116,8 @@ export default function HomePage({
   }, [onPrepareCamera]);
 
   useEffect(() => {
-    if (!previewVideoRef.current) return;
-    previewVideoRef.current.srcObject = previewStream;
+    if (previewVideoRef.current) previewVideoRef.current.srcObject = previewStream;
+    if (desktopVideoRef.current) desktopVideoRef.current.srcObject = previewStream;
   }, [previewStream]);
 
   useEffect(() => {
@@ -131,11 +132,11 @@ export default function HomePage({
           autoPlay
           playsInline
           muted
-          className="absolute inset-0 h-full w-full scale-x-[-1] object-cover"
+          className="absolute inset-0 h-full w-full scale-x-[-1] object-cover lg:hidden"
         />
       )}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-black/70" />
-      <div className="relative z-10 flex w-full flex-shrink-0 flex-col bg-transparent md:w-full">
+      <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-black/70 lg:hidden" />
+      <div className="relative z-10 flex w-full flex-shrink-0 flex-col bg-transparent lg:h-full md:w-full">
         <div className="flex items-center gap-2.5 px-6 py-5">
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <LogoMark className="h-11 w-11 flex-shrink-0" />
@@ -165,7 +166,67 @@ export default function HomePage({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col px-6 py-5 md:px-8 md:py-8">
-          <div className="flex flex-1" />
+          {/* Mobile: spacer to push controls to bottom */}
+          <div className="flex flex-1 lg:hidden" />
+
+          {/* Desktop: two video squares side by side */}
+          <div className="hidden lg:grid grid-cols-2 items-center gap-6 flex-1 min-h-0 pb-4">
+            {/* LEFT — user camera */}
+            <div
+              className="relative mx-auto aspect-square w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
+              style={{ maxWidth: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 13rem))" }}
+            >
+              <video
+                ref={desktopVideoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`h-full w-full scale-x-[-1] object-cover transition-opacity duration-300 ${previewStream ? "opacity-100" : "opacity-0"}`}
+              />
+              {!previewStream && (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a]">
+                  <GenderAvatar gender={matching.profile.gender} className="h-28 w-28 opacity-40" />
+                </div>
+              )}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/50" />
+              <div className="absolute bottom-4 left-4 rounded-full bg-black/50 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
+                Vous
+              </div>
+            </div>
+
+            {/* RIGHT — partner placeholder */}
+            <div
+              className="relative mx-auto aspect-square w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#0d0f14] shadow-2xl shadow-black/45"
+              style={{ maxWidth: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 13rem))" }}
+            >
+              {/* Decorative background: preview cards grid */}
+              <div className="absolute inset-0 grid grid-cols-2 gap-1.5 p-1.5">
+                {PREVIEW_CARDS.slice(0, 4).map((card, i) => (
+                  <div
+                    key={card.name}
+                    className="relative overflow-hidden rounded-xl"
+                    style={{ background: GRADIENTS[i % GRADIENTS.length] }}
+                  >
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="select-none text-5xl font-black text-white/10">{card.name[0]}</span>
+                    </div>
+                    {card.online && (
+                      <div className="absolute left-2.5 top-2.5 h-2 w-2 rounded-full bg-green-400" />
+                    )}
+                  </div>
+                ))}
+              </div>
+              {/* Center overlay */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/55 backdrop-blur-[3px]">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
+                  <svg className="h-8 w-8 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5 20.1 8.4A1.3 1.3 0 0 1 22 9.57v4.86a1.3 1.3 0 0 1-1.9 1.17l-4.35-2.1M4.75 18h8a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-8a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z" />
+                  </svg>
+                </div>
+                <p className="text-sm font-semibold text-white/50">Ton partenaire apparaîtra ici</p>
+              </div>
+            </div>
+          </div>
 
           <div className="flex-shrink-0 pb-2">
             <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/25 bg-white/[0.11] px-5 py-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
