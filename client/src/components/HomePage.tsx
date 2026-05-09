@@ -165,16 +165,16 @@ export default function HomePage({
           </div>
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col px-6 py-5 md:px-8 md:py-8">
+        <div className="flex min-h-0 flex-1 flex-col px-6 py-5 md:px-8 md:py-8 lg:px-4 lg:py-2">
           {/* Mobile: spacer to push controls to bottom */}
           <div className="flex flex-1 lg:hidden" />
 
           {/* Desktop: two video squares side by side */}
-          <div className="hidden lg:grid grid-cols-2 items-center gap-6 flex-1 min-h-0 pb-4">
+          <div className="hidden lg:grid grid-cols-2 items-center gap-3 flex-1 min-h-0 pb-2">
             {/* LEFT — user camera */}
             <div
-              className="relative mx-auto aspect-square w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
-              style={{ maxWidth: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 13rem))" }}
+              className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
+              style={{ width: "min(calc((100vw - 2.5rem) / 2), calc(100vh - 10rem))" }}
             >
               <video
                 ref={desktopVideoRef}
@@ -196,8 +196,8 @@ export default function HomePage({
 
             {/* RIGHT — partner placeholder */}
             <div
-              className="relative mx-auto aspect-square w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#0d0f14] shadow-2xl shadow-black/45"
-              style={{ maxWidth: "min(calc((100vw - 5.5rem) / 2), calc(100vh - 13rem))" }}
+              className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#0d0f14] shadow-2xl shadow-black/45"
+              style={{ width: "min(calc((100vw - 2.5rem) / 2), calc(100vh - 10rem))" }}
             >
               {/* Decorative background: preview cards grid */}
               <div className="absolute inset-0 grid grid-cols-2 gap-1.5 p-1.5">
