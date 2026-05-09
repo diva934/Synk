@@ -174,7 +174,7 @@ export default function GemShopModal({
                 <div className="min-w-0">
                   <p className="text-sm font-black leading-tight text-white">{notice}</p>
                   <p className="mt-1 text-xs font-bold text-white/55">
-                    Choisis un pack ou recupere ton cadeau quotidien.
+                    Choisis un pack ou recupere ton cadeau hebdomadaire.
                   </p>
                 </div>
               </div>
@@ -200,7 +200,7 @@ export default function GemShopModal({
 
             <div className="flex min-w-0 flex-col justify-center px-4">
               <div className="text-lg font-black leading-tight">
-                Cadeau quotidien
+                Cadeau hebdomadaire
               </div>
               <div className="mt-1 text-sm font-bold text-[#00f0a8]">
                 + {dailyReward.toLocaleString()} gemmes gratuites
@@ -209,7 +209,7 @@ export default function GemShopModal({
 
             <div className="flex items-center pr-4">
               <span className="rounded-2xl bg-white/10 px-4 py-2 text-sm font-black">
-                {canClaimDaily ? "Récupérer" : "Demain"}
+                {canClaimDaily ? "Récupérer" : "Semaine proch."}
               </span>
             </div>
           </button>

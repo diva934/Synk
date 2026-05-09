@@ -17,12 +17,15 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 type Page = "home" | "room";
 
 const SWIPE_COST = 9;
-const DAILY_REWARD = 130;
+const DAILY_REWARD = 850;
 const PENDING_PROFILE_KEY = "randomchat:pending-profile";
 const SIGNUP_SUCCESS_KEY = "randomchat:signup-success-pending";
 
 function getTodayKey(): string {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const jan1 = new Date(now.getFullYear(), 0, 1);
+  const week = Math.ceil(((now.getTime() - jan1.getTime()) / 86400000 + jan1.getDay() + 1) / 7);
+  return `${now.getFullYear()}-W${String(week).padStart(2, "0")}`;
 }
 
 function readStoredProfile(userId: string): MatchProfile | null {
