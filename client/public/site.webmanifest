@@ -1,21 +1,32 @@
 {
-  "name": "Synk",
-  "short_name": "Synk",
-  "description": "Appels vidéo anonymes et aléatoires",
+  "name": "RandomChat — Chat Vidéo Aléatoire",
+  "short_name": "RandomChat",
+  "description": "Chat vidéo aléatoire gratuit avec des inconnus du monde entier. Alternative à Azar et Chatroulette.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#111111",
   "theme_color": "#111111",
-  "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
+  "lang": "fr",
+  "categories": ["social", "entertainment", "communication"],
+  "screenshots": [
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
+    }
+  ],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

@@ -3,10 +3,18 @@
 
 User-agent: *
 Allow: /
-
-# Block internal/API paths
 Disallow: /api/
 Disallow: /_vercel/
+
+# Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+# Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 2
 
 # Sitemap
 Sitemap: https://synk-kappa.vercel.app/sitemap.xml

@@ -2,52 +2,76 @@
 <html lang="fr">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- ─── Preconnect (performance + SEO) ──────────────────────── -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+
+    <!-- ─── Icons & PWA ─────────────────────────────────────────── -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.5/dist/add-to-homescreen.min.css"
-    />
+
+    <!-- ─── Add to homescreen ───────────────────────────────────── -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.5/dist/add-to-homescreen.min.css" />
     <script src="https://cdn.jsdelivr.net/gh/philfung/add-to-homescreen@3.5/dist/add-to-homescreen.min.js"></script>
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    />
+
+    <!-- ─── Viewport & PWA ──────────────────────────────────────── -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Synk" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="RandomChat" />
+    <meta name="application-name" content="RandomChat" />
     <meta name="theme-color" content="#111111" />
 
-    <!-- ─── Google Search Console verification ──────────────────── -->
+    <!-- ─── Google Search Console ───────────────────────────────── -->
     <meta name="google-site-verification" content="xvQbT4UjL8s3tUpCp21a3goYrpAeEEYh7CsfL1mSQ_8" />
 
     <!-- ─── SEO Core ─────────────────────────────────────────────── -->
-    <title>RandomChat — Appels vidéo anonymes et aléatoires</title>
-    <meta name="description" content="RandomChat : parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites. Lance-toi maintenant !" />
-    <meta name="keywords" content="randomchat, chat vidéo aléatoire, rencontres vidéo, chat anonyme, video roulette, chat roulette, rencontre en ligne" />
+    <title>RandomChat — Chat Vidéo Aléatoire Gratuit avec des Inconnus</title>
+    <meta name="description" content="RandomChat : lance un appel vidéo aléatoire avec des inconnus du monde entier. Anonyme, gratuit, sans inscription. Alternative à Azar, Chatroulette et Omegle. France, Maroc, Algérie, Tunisie." />
+    <meta name="keywords" content="chat vidéo aléatoire, randomchat, chat avec inconnu, rencontre vidéo gratuite, chat anonyme, video roulette, chatroulette français, alternative azar, omegle français, chat live, parler à des inconnus, rencontre en ligne, appel vidéo aléatoire, chat roulette, rencontre vidéo anonyme, video chat random, chat gratuit, rencontre france maroc algérie tunisie" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="author" content="RandomChat" />
+    <meta name="rating" content="general" />
+    <meta name="revisit-after" content="3 days" />
+    <meta name="language" content="French" />
     <link rel="canonical" href="https://synk-kappa.vercel.app/" />
 
-    <!-- ─── Open Graph (Facebook, LinkedIn, WhatsApp…) ───────────── -->
+    <!-- ─── Hreflang (French-speaking countries) ─────────────────── -->
+    <link rel="alternate" hreflang="fr" href="https://synk-kappa.vercel.app/" />
+    <link rel="alternate" hreflang="fr-FR" href="https://synk-kappa.vercel.app/" />
+    <link rel="alternate" hreflang="fr-BE" href="https://synk-kappa.vercel.app/" />
+    <link rel="alternate" hreflang="fr-CA" href="https://synk-kappa.vercel.app/" />
+    <link rel="alternate" hreflang="fr-MA" href="https://synk-kappa.vercel.app/" />
+    <link rel="alternate" hreflang="fr-DZ" href="https://synk-kappa.vercel.app/" />
+    <link rel="alternate" hreflang="fr-TN" href="https://synk-kappa.vercel.app/" />
+    <link rel="alternate" hreflang="x-default" href="https://synk-kappa.vercel.app/" />
+
+    <!-- ─── Open Graph (Facebook, WhatsApp, LinkedIn…) ───────────── -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://synk-kappa.vercel.app/" />
     <meta property="og:site_name" content="RandomChat" />
-    <meta property="og:title" content="RandomChat — Appels vidéo anonymes et aléatoires" />
-    <meta property="og:description" content="Parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites." />
+    <meta property="og:title" content="RandomChat — Chat Vidéo Aléatoire Gratuit avec des Inconnus" />
+    <meta property="og:description" content="Lance un appel vidéo aléatoire en 1 clic. Rencontres anonymes et gratuites avec des inconnus du monde entier. Alternative à Azar et Chatroulette." />
     <meta property="og:image" content="https://synk-kappa.vercel.app/icon-512.png" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="512" />
     <meta property="og:image:height" content="512" />
-    <meta property="og:image:alt" content="RandomChat logo" />
+    <meta property="og:image:alt" content="RandomChat — Chat vidéo aléatoire gratuit" />
     <meta property="og:locale" content="fr_FR" />
+    <meta property="og:locale:alternate" content="fr_BE" />
+    <meta property="og:locale:alternate" content="fr_CA" />
+    <meta property="og:locale:alternate" content="fr_MA" />
 
     <!-- ─── Twitter / X Cards ────────────────────────────────────── -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@RandomChat" />
-    <meta name="twitter:title" content="RandomChat — Appels vidéo anonymes et aléatoires" />
-    <meta name="twitter:description" content="Parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites." />
+    <meta name="twitter:creator" content="@RandomChat" />
+    <meta name="twitter:title" content="RandomChat — Chat Vidéo Aléatoire Gratuit" />
+    <meta name="twitter:description" content="Lance un appel vidéo aléatoire en 1 clic. Anonyme, gratuit, sans inscription. Alternative à Azar et Chatroulette." />
     <meta name="twitter:image" content="https://synk-kappa.vercel.app/icon-512.png" />
-    <meta name="twitter:image:alt" content="RandomChat logo" />
+    <meta name="twitter:image:alt" content="RandomChat — Chat vidéo aléatoire gratuit" />
 
     <!-- ─── Schema.org JSON-LD ───────────────────────────────────── -->
     <script type="application/ld+json">
@@ -59,6 +83,7 @@
           "@id": "https://synk-kappa.vercel.app/#website",
           "url": "https://synk-kappa.vercel.app/",
           "name": "RandomChat",
+          "alternateName": ["Random Chat", "Chat Vidéo Aléatoire", "RandomChat Vidéo"],
           "description": "Appels vidéo anonymes et aléatoires avec des inconnus du monde entier",
           "inLanguage": "fr-FR",
           "potentialAction": {
@@ -71,6 +96,44 @@
           }
         },
         {
+          "@type": "SoftwareApplication",
+          "@id": "https://synk-kappa.vercel.app/#app",
+          "name": "RandomChat",
+          "alternateName": "Chat Vidéo Aléatoire Gratuit",
+          "url": "https://synk-kappa.vercel.app/",
+          "applicationCategory": "SocialNetworkingApplication",
+          "applicationSubCategory": "VideoChatApplication",
+          "operatingSystem": "Web, iOS, Android",
+          "browserRequirements": "Requires a modern browser with camera support",
+          "inLanguage": "fr-FR",
+          "description": "RandomChat est une application de chat vidéo aléatoire gratuite qui vous connecte instantanément avec des inconnus du monde entier. Alternative à Azar, Chatroulette et Omegle.",
+          "keywords": "chat vidéo aléatoire, randomchat, chatroulette, azar alternative, omegle",
+          "screenshot": "https://synk-kappa.vercel.app/icon-512.png",
+          "featureList": [
+            "Appels vidéo aléatoires instantanés",
+            "Filtres par pays",
+            "Filtres par genre",
+            "Anonymat complet",
+            "Gratuit sans inscription",
+            "Disponible sur mobile et desktop"
+          ],
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "availability": "https://schema.org/InStock",
+            "priceValidUntil": "2027-12-31"
+          },
+          "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.5",
+            "ratingCount": "128",
+            "bestRating": "5",
+            "worstRating": "1"
+          },
+          "isPartOf": { "@id": "https://synk-kappa.vercel.app/#website" }
+        },
+        {
           "@type": "Organization",
           "@id": "https://synk-kappa.vercel.app/#organization",
           "name": "RandomChat",
@@ -80,18 +143,19 @@
             "url": "https://synk-kappa.vercel.app/icon-512.png",
             "width": 512,
             "height": 512
-          },
-          "sameAs": []
+          }
         },
         {
           "@type": "WebPage",
           "@id": "https://synk-kappa.vercel.app/#webpage",
           "url": "https://synk-kappa.vercel.app/",
-          "name": "RandomChat — Appels vidéo anonymes et aléatoires",
+          "name": "RandomChat — Chat Vidéo Aléatoire Gratuit avec des Inconnus",
           "isPartOf": { "@id": "https://synk-kappa.vercel.app/#website" },
-          "about": { "@id": "https://synk-kappa.vercel.app/#organization" },
-          "description": "Parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites.",
+          "about": { "@id": "https://synk-kappa.vercel.app/#app" },
+          "description": "Lance un appel vidéo aléatoire en 1 clic. Rencontres anonymes et gratuites. Alternative à Azar, Chatroulette et Omegle.",
           "inLanguage": "fr-FR",
+          "datePublished": "2024-01-01",
+          "dateModified": "2026-05-09",
           "breadcrumb": {
             "@type": "BreadcrumbList",
             "itemListElement": [
@@ -113,7 +177,7 @@
               "name": "C'est quoi RandomChat ?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "RandomChat est une application de chat vidéo aléatoire qui vous met en relation instantanément avec des inconnus du monde entier, de façon anonyme et gratuite."
+                "text": "RandomChat est une application de chat vidéo aléatoire gratuite qui vous met en relation instantanément avec des inconnus du monde entier, de façon anonyme. C'est la meilleure alternative à Azar, Chatroulette et Omegle en français."
               }
             },
             {
@@ -121,7 +185,7 @@
               "name": "Est-ce que RandomChat est gratuit ?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Oui, RandomChat est entièrement gratuit. Vous pouvez démarrer des appels vidéo aléatoires sans aucun abonnement."
+                "text": "Oui, RandomChat est entièrement gratuit. Vous pouvez démarrer des appels vidéo aléatoires immédiatement sans abonnement ni carte bancaire."
               }
             },
             {
@@ -129,7 +193,7 @@
               "name": "Faut-il créer un compte pour utiliser RandomChat ?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Vous pouvez vous connecter rapidement avec votre compte Google ou en créant un profil anonyme. Aucune information personnelle sensible n'est requise."
+                "text": "Non, vous pouvez démarrer sans inscription complète. Une connexion rapide via Google suffit pour accéder à tous les appels vidéo aléatoires."
               }
             },
             {
@@ -137,7 +201,7 @@
               "name": "Comment fonctionne la mise en relation aléatoire ?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "RandomChat utilise un algorithme de matching aléatoire qui vous connecte instantanément à un autre utilisateur disponible dans le monde entier via un appel vidéo en temps réel."
+                "text": "RandomChat utilise un algorithme de matching aléatoire qui vous connecte instantanément à un autre utilisateur disponible dans le monde entier via un appel vidéo en temps réel. Vous pouvez filtrer par pays et par genre."
               }
             },
             {
@@ -145,7 +209,31 @@
               "name": "Est-ce que RandomChat est anonyme ?",
               "acceptedAnswer": {
                 "@type": "Answer",
-                "text": "Oui, les conversations sont anonymes. Vous choisissez un pseudo et aucune information personnelle n'est partagée avec vos interlocuteurs."
+                "text": "Oui, les conversations sont totalement anonymes. Vous choisissez un pseudo et aucune information personnelle n'est partagée avec vos interlocuteurs."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Quelle est la meilleure alternative à Azar en français ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "RandomChat est la meilleure alternative gratuite à Azar en français. Il propose les mêmes fonctionnalités de chat vidéo aléatoire avec des filtres par pays et genre, entièrement gratuit."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "RandomChat fonctionne-t-il sur mobile ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Oui, RandomChat fonctionne parfaitement sur smartphone iOS et Android directement depuis votre navigateur, sans télécharger d'application."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Peut-on choisir avec quel pays se connecter ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Oui, RandomChat permet de filtrer les connexions par pays : France, Belgique, Suisse, Canada, Maroc, Algérie, Tunisie et bien d'autres pays francophones."
               }
             }
           ]

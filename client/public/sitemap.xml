@@ -2,14 +2,19 @@
 <urlset
   xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
   xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
     http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd"
 >
-  <!-- Page principale -->
   <url>
     <loc>https://synk-kappa.vercel.app/</loc>
-    <lastmod>2025-05-09</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2026-05-09</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://synk-kappa.vercel.app/icon-512.png</image:loc>
+      <image:title>RandomChat — Chat Vidéo Aléatoire Gratuit</image:title>
+      <image:caption>Lance un appel vidéo aléatoire avec des inconnus du monde entier</image:caption>
+    </image:image>
   </url>
 </urlset>
