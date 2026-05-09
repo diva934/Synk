@@ -8,6 +8,10 @@
     {
       "src": "api/create-checkout-session.ts",
       "use": "@vercel/node"
+    },
+    {
+      "src": "api/ping.ts",
+      "use": "@vercel/node"
     }
   ],
   "routes": [
