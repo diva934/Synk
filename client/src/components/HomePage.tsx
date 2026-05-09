@@ -190,7 +190,7 @@ export default function HomePage({
                 options={COUNTRIES} />
             </div>
             <button onClick={() => onStart({ video: true, audio: true, matching })}
-              className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
+              className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98] btn-swipe"
               style={{ background: "#2d6ade" }}>
               <span className="flex items-center justify-center gap-2">
                 <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -295,7 +295,7 @@ export default function HomePage({
               {/* Launch button */}
               <button
                 onClick={() => onStart({ video: true, audio: true, matching })}
-                className="flex w-full items-center justify-center gap-3 rounded-full bg-white py-4 text-base font-black text-black shadow-2xl shadow-black/30 transition hover:bg-white/90 active:scale-[0.98]"
+                className="relative flex w-full overflow-hidden items-center justify-center gap-3 rounded-full bg-white py-4 text-base font-black text-black shadow-2xl shadow-black/30 transition hover:bg-white/90 active:scale-[0.98] btn-swipe"
               >
                 <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 6.5A3.5 3.5 0 0 0 1.5 10v4A3.5 3.5 0 0 0 5 17.5h7A3.5 3.5 0 0 0 15.5 14v-.17l3.55 2.28A1.6 1.6 0 0 0 21.5 14.76V9.24a1.6 1.6 0 0 0-2.45-1.35l-3.55 2.28V10A3.5 3.5 0 0 0 12 6.5H5Z" />

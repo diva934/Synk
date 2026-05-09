@@ -77,6 +77,25 @@
            text-xs text-white font-medium;
   }
 
+  /* Swipe shimmer animation on CTA buttons */
+  @keyframes btn-swipe {
+    0%   { transform: translateX(-110%) skewX(-18deg); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateX(230%) skewX(-18deg); opacity: 0; }
+  }
+  .btn-swipe::after {
+    content: "";
+    position: absolute;
+    inset-y: 0;
+    left: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.22) 50%, transparent 100%);
+    animation: btn-swipe 2.8s ease-in-out infinite;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
   /* Participant strip tile */
   .participant-tile {
     @apply relative flex-shrink-0 rounded overflow-hidden bg-[#2d2d2d] cursor-pointer;
