@@ -1,0 +1,12 @@
+# RandomChat — robots.txt
+# https://synk-kappa.vercel.app/
+
+User-agent: *
+Allow: /
+
+# Block internal/API paths
+Disallow: /api/
+Disallow: /_vercel/
+
+# Sitemap
+Sitemap: https://synk-kappa.vercel.app/sitemap.xml

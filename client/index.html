@@ -17,8 +17,139 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Synk" />
     <meta name="theme-color" content="#111111" />
-    <meta name="description" content="RandomChat — appels vidéo anonymes et aléatoires" />
-    <title>RandomChat</title>
+
+    <!-- ─── SEO Core ─────────────────────────────────────────────── -->
+    <title>RandomChat — Appels vidéo anonymes et aléatoires</title>
+    <meta name="description" content="RandomChat : parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites. Lance-toi maintenant !" />
+    <meta name="keywords" content="randomchat, chat vidéo aléatoire, rencontres vidéo, chat anonyme, video roulette, chat roulette, rencontre en ligne" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="author" content="RandomChat" />
+    <link rel="canonical" href="https://synk-kappa.vercel.app/" />
+
+    <!-- ─── Open Graph (Facebook, LinkedIn, WhatsApp…) ───────────── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://synk-kappa.vercel.app/" />
+    <meta property="og:site_name" content="RandomChat" />
+    <meta property="og:title" content="RandomChat — Appels vidéo anonymes et aléatoires" />
+    <meta property="og:description" content="Parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites." />
+    <meta property="og:image" content="https://synk-kappa.vercel.app/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:alt" content="RandomChat logo" />
+    <meta property="og:locale" content="fr_FR" />
+
+    <!-- ─── Twitter / X Cards ────────────────────────────────────── -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@RandomChat" />
+    <meta name="twitter:title" content="RandomChat — Appels vidéo anonymes et aléatoires" />
+    <meta name="twitter:description" content="Parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites." />
+    <meta name="twitter:image" content="https://synk-kappa.vercel.app/icon-512.png" />
+    <meta name="twitter:image:alt" content="RandomChat logo" />
+
+    <!-- ─── Schema.org JSON-LD ───────────────────────────────────── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://synk-kappa.vercel.app/#website",
+          "url": "https://synk-kappa.vercel.app/",
+          "name": "RandomChat",
+          "description": "Appels vidéo anonymes et aléatoires avec des inconnus du monde entier",
+          "inLanguage": "fr-FR",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://synk-kappa.vercel.app/"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://synk-kappa.vercel.app/#organization",
+          "name": "RandomChat",
+          "url": "https://synk-kappa.vercel.app/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://synk-kappa.vercel.app/icon-512.png",
+            "width": 512,
+            "height": 512
+          },
+          "sameAs": []
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://synk-kappa.vercel.app/#webpage",
+          "url": "https://synk-kappa.vercel.app/",
+          "name": "RandomChat — Appels vidéo anonymes et aléatoires",
+          "isPartOf": { "@id": "https://synk-kappa.vercel.app/#website" },
+          "about": { "@id": "https://synk-kappa.vercel.app/#organization" },
+          "description": "Parle en vidéo avec des inconnus du monde entier. Rencontres aléatoires, anonymes et gratuites.",
+          "inLanguage": "fr-FR",
+          "breadcrumb": {
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Accueil",
+                "item": "https://synk-kappa.vercel.app/"
+              }
+            ]
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://synk-kappa.vercel.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "C'est quoi RandomChat ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "RandomChat est une application de chat vidéo aléatoire qui vous met en relation instantanément avec des inconnus du monde entier, de façon anonyme et gratuite."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Est-ce que RandomChat est gratuit ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Oui, RandomChat est entièrement gratuit. Vous pouvez démarrer des appels vidéo aléatoires sans aucun abonnement."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Faut-il créer un compte pour utiliser RandomChat ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Vous pouvez vous connecter rapidement avec votre compte Google ou en créant un profil anonyme. Aucune information personnelle sensible n'est requise."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Comment fonctionne la mise en relation aléatoire ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "RandomChat utilise un algorithme de matching aléatoire qui vous connecte instantanément à un autre utilisateur disponible dans le monde entier via un appel vidéo en temps réel."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Est-ce que RandomChat est anonyme ?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Oui, les conversations sont anonymes. Vous choisissez un pseudo et aucune information personnelle n'est partagée avec vos interlocuteurs."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
