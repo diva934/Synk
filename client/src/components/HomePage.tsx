@@ -118,7 +118,8 @@ export default function HomePage({
 
   useEffect(() => {
     onPrepareCamera();
-  }, [onPrepareCamera]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (previewVideoRef.current) previewVideoRef.current.srcObject = previewStream;
