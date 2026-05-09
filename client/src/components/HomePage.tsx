@@ -126,142 +126,53 @@ export default function HomePage({
 
   return (
     <div className="app-screen relative flex overflow-hidden bg-[#05070b]">
+
+      {/* ══════════════════════════════════════════════════════════════
+          MOBILE layout  (hidden on lg+)
+      ══════════════════════════════════════════════════════════════ */}
       {previewStream && (
         <video
           ref={previewVideoRef}
-          autoPlay
-          playsInline
-          muted
+          autoPlay playsInline muted
           className="absolute inset-0 h-full w-full scale-x-[-1] object-cover lg:hidden"
         />
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/10 to-black/70 lg:hidden" />
-      <div className="relative z-10 flex w-full flex-shrink-0 flex-col bg-transparent lg:h-full md:w-full">
+      <div className="relative z-10 flex w-full flex-shrink-0 flex-col bg-transparent lg:hidden">
+        {/* Mobile header */}
         <div className="flex items-center gap-2.5 px-6 py-5">
           <div className="flex min-w-0 flex-1 items-center gap-2.5">
             <LogoMark className="h-11 w-11 flex-shrink-0" />
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setShowShop(true)}
-              className="rounded-full bg-white px-5 py-2.5 text-sm font-black text-black transition hover:bg-white/90"
-              title="Boutique"
-            >
+            <button type="button" onClick={() => setShowShop(true)}
+              className="rounded-full bg-white px-5 py-2.5 text-sm font-black text-black transition hover:bg-white/90">
               Shop
             </button>
-            <button
-              type="button"
-              onClick={() => setShowProfile(true)}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white transition hover:bg-white/10"
-              title="Profil"
-            >
-              {profileEdit.primaryPhoto ? (
-                <img src={profileEdit.primaryPhoto} alt="" className="h-8 w-8 rounded-full object-cover" />
-              ) : (
-                <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />
-              )}
+            <button type="button" onClick={() => setShowProfile(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white transition hover:bg-white/10">
+              {profileEdit.primaryPhoto
+                ? <img src={profileEdit.primaryPhoto} alt="" className="h-8 w-8 rounded-full object-cover" />
+                : <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />}
             </button>
           </div>
         </div>
-
-        <div className="flex min-h-0 flex-1 flex-col px-6 py-5 md:px-8 md:py-8 lg:px-4 lg:py-2">
-          {/* Mobile: spacer to push controls to bottom */}
-          <div className="flex flex-1 lg:hidden" />
-
-          {/* Desktop: two video squares side by side */}
-          <div className="hidden lg:grid grid-cols-2 items-center gap-3 flex-1 min-h-0 pb-2">
-            {/* LEFT — user camera */}
-            <div
-              className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#1a1a1a] shadow-2xl shadow-black/45"
-              style={{ width: "min(calc((100vw - 2.5rem) / 2), calc(100vh - 10rem))" }}
-            >
-              <video
-                ref={desktopVideoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`h-full w-full scale-x-[-1] object-cover transition-opacity duration-300 ${previewStream ? "opacity-100" : "opacity-0"}`}
-              />
-              {!previewStream && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#1a1a1a]">
-                  <GenderAvatar gender={matching.profile.gender} className="h-28 w-28 opacity-40" />
-                </div>
-              )}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/50" />
-              <div className="absolute bottom-4 left-4 rounded-full bg-black/50 px-3 py-1 text-xs font-bold text-white backdrop-blur-sm">
-                Vous
-              </div>
-            </div>
-
-            {/* RIGHT — partner placeholder */}
-            <div
-              className="relative mx-auto aspect-square overflow-hidden rounded-[2rem] border border-white/10 bg-[#0d0f14] shadow-2xl shadow-black/45"
-              style={{ width: "min(calc((100vw - 2.5rem) / 2), calc(100vh - 10rem))" }}
-            >
-              {/* Decorative background: preview cards grid */}
-              <div className="absolute inset-0 grid grid-cols-2 gap-1.5 p-1.5">
-                {PREVIEW_CARDS.slice(0, 4).map((card, i) => (
-                  <div
-                    key={card.name}
-                    className="relative overflow-hidden rounded-xl"
-                    style={{ background: GRADIENTS[i % GRADIENTS.length] }}
-                  >
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="select-none text-5xl font-black text-white/10">{card.name[0]}</span>
-                    </div>
-                    {card.online && (
-                      <div className="absolute left-2.5 top-2.5 h-2 w-2 rounded-full bg-green-400" />
-                    )}
-                  </div>
-                ))}
-              </div>
-              {/* Center overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/55 backdrop-blur-[3px]">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white/10">
-                  <svg className="h-8 w-8 text-white/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5 20.1 8.4A1.3 1.3 0 0 1 22 9.57v4.86a1.3 1.3 0 0 1-1.9 1.17l-4.35-2.1M4.75 18h8a3 3 0 0 0 3-3V9a3 3 0 0 0-3-3h-8a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3Z" />
-                  </svg>
-                </div>
-                <p className="text-sm font-semibold text-white/50">Ton partenaire apparaîtra ici</p>
-              </div>
-            </div>
-          </div>
-
+        {/* Mobile controls */}
+        <div className="flex min-h-0 flex-1 flex-col px-6 py-5">
+          <div className="flex flex-1" />
           <div className="flex-shrink-0 pb-2">
             <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/25 bg-white/[0.11] px-5 py-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
-              <FilterPill
-                icon="gender"
-                label="Genre"
-                value={matching.filters.gender}
-                onChange={(value) =>
-                  setMatching((current) => ({
-                    ...current,
-                    filters: { ...current.filters, gender: value as Gender },
-                  }))
-                }
-                options={TARGET_GENDERS}
-              />
+              <FilterPill icon="gender" label="Genre" value={matching.filters.gender}
+                onChange={(value) => setMatching((c) => ({ ...c, filters: { ...c.filters, gender: value as Gender } }))}
+                options={TARGET_GENDERS} />
               <span className="mx-4 h-7 w-px bg-white/15" />
-              <FilterPill
-                icon="globe"
-                label="Pays"
-                value={matching.filters.country}
-                onChange={(value) =>
-                  setMatching((current) => ({
-                    ...current,
-                    filters: { ...current.filters, country: value as Country },
-                  }))
-                }
-                options={COUNTRIES}
-              />
+              <FilterPill icon="globe" label="Pays" value={matching.filters.country}
+                onChange={(value) => setMatching((c) => ({ ...c, filters: { ...c.filters, country: value as Country } }))}
+                options={COUNTRIES} />
             </div>
-
-            <button
-              onClick={() => onStart({ video: true, audio: true, matching })}
+            <button onClick={() => onStart({ video: true, audio: true, matching })}
               className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98]"
-              style={{ background: "#2d6ade" }}
-            >
+              style={{ background: "#2d6ade" }}>
               <span className="flex items-center justify-center gap-2">
                 <svg className="h-6 w-6 fill-current" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M5 6.5A3.5 3.5 0 0 0 1.5 10v4A3.5 3.5 0 0 0 5 17.5h7A3.5 3.5 0 0 0 15.5 14v-.17l3.55 2.28A1.6 1.6 0 0 0 21.5 14.76V9.24a1.6 1.6 0 0 0-2.45-1.35l-3.55 2.28V10A3.5 3.5 0 0 0 12 6.5H5Z" />
@@ -273,47 +184,141 @@ export default function HomePage({
         </div>
       </div>
 
-      <div className="hidden">
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #1a1a1a" }}>
-          <span className="text-sm font-medium text-white/30">Apercu en ligne</span>
-          <span className="flex items-center gap-1.5 text-xs text-white/25">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
-            {onlineCount} disponibles
-          </span>
-        </div>
+      {/* ══════════════════════════════════════════════════════════════
+          DESKTOP layout — style Azar  (hidden on mobile)
+      ══════════════════════════════════════════════════════════════ */}
+      <div className="hidden lg:flex absolute inset-0 flex-col bg-[#111111]">
 
-        <div className="flex-1 overflow-y-auto p-4 scrollbar-hide">
-          <div className="columns-2 gap-3 space-y-3 lg:columns-3">
-            {PREVIEW_CARDS.map((card, i) => (
-              <div
-                key={card.name}
-                className="break-inside-avoid overflow-hidden rounded-2xl relative cursor-pointer group"
-                style={{
-                  background: GRADIENTS[i % GRADIENTS.length],
-                  height: card.tall ? 240 : 170,
-                  border: "1px solid #222",
-                }}
-              >
-                <div className="absolute inset-0 bg-black/0 transition-colors duration-200 group-hover:bg-black/20" />
-                {card.online && (
-                  <div className="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-semibold text-white">
-                    <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                    ONLINE
-                  </div>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="select-none text-4xl font-bold text-white/20">{card.name[0]}</span>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3">
-                  <p className="text-sm font-semibold text-white">
-                    {card.flag} {card.name}
-                  </p>
-                </div>
-              </div>
-            ))}
+        {/* ── Top navbar ── */}
+        <div className="flex flex-shrink-0 items-center gap-3 border-b border-white/[0.06] px-6 py-3">
+          <LogoMark className="h-10 w-10 flex-shrink-0" />
+          <div className="flex-1" />
+          <div className="flex items-center gap-2">
+            <button type="button" onClick={() => setShowShop(true)}
+              className="rounded-full bg-white px-5 py-2 text-sm font-black text-black transition hover:bg-white/90">
+              Shop
+            </button>
+            <button type="button" onClick={() => setShowProfile(true)}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 text-white transition hover:bg-white/10">
+              {profileEdit.primaryPhoto
+                ? <img src={profileEdit.primaryPhoto} alt="" className="h-8 w-8 rounded-full object-cover" />
+                : <GenderAvatar gender={matching.profile.gender} className="h-8 w-8" />}
+            </button>
           </div>
         </div>
-      </div>
+
+        {/* ── Two panels ── */}
+        <div className="flex flex-1 min-h-0">
+
+          {/* LEFT PANEL — camera + controls */}
+          <div className="relative flex w-[48%] flex-shrink-0 flex-col overflow-hidden">
+            {/* Camera preview as bg */}
+            {previewStream ? (
+              <video ref={desktopVideoRef} autoPlay playsInline muted
+                className="absolute inset-0 h-full w-full scale-x-[-1] object-cover" />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center bg-[#0d0d0d]">
+                <GenderAvatar gender={matching.profile.gender} className="h-28 w-28 opacity-10" />
+              </div>
+            )}
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/10 to-black/80" />
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-1 flex-col justify-end px-8 pb-8">
+              {/* Online count */}
+              <p className="mb-8 flex items-center gap-2 text-sm font-semibold text-white/70">
+                <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+                {onlineCount.toLocaleString()} personnes sont en ligne maintenant !
+              </p>
+
+              {/* Genre + Pays pills */}
+              <div className="mb-3 flex gap-3">
+                {/* Genre pill */}
+                <label className="relative flex h-12 flex-1 cursor-pointer items-center gap-2.5 rounded-full bg-white/10 px-5 text-white backdrop-blur-sm transition hover:bg-white/15">
+                  <FilterIcon type="gender" />
+                  <span className="flex-1 text-sm font-bold">Genre</span>
+                  <span className="text-[10px] font-semibold text-white/50 uppercase tracking-wider">
+                    {TARGET_GENDERS.find((o) => o.value === matching.filters.gender)?.label ?? "Tous"}
+                  </span>
+                  <svg className="h-4 w-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                  </svg>
+                  <select
+                    value={matching.filters.gender}
+                    onChange={(e) => setMatching((c) => ({ ...c, filters: { ...c.filters, gender: e.target.value as Gender } }))}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  >
+                    {TARGET_GENDERS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </label>
+
+                {/* Pays pill */}
+                <label className="relative flex h-12 flex-1 cursor-pointer items-center gap-2.5 rounded-full bg-white/10 px-5 text-white backdrop-blur-sm transition hover:bg-white/15">
+                  <FilterIcon type="globe" />
+                  <span className="flex-1 text-sm font-bold">Pays</span>
+                  <span className="text-[10px] font-semibold text-white/50 uppercase tracking-wider">
+                    {COUNTRIES.find((o) => o.value === matching.filters.country)?.label.slice(0, 8) ?? "Tous"}
+                  </span>
+                  <svg className="h-4 w-4 text-white/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m6 9 6 6 6-6" />
+                  </svg>
+                  <select
+                    value={matching.filters.country}
+                    onChange={(e) => setMatching((c) => ({ ...c, filters: { ...c.filters, country: e.target.value as Country } }))}
+                    className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  >
+                    {COUNTRIES.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </label>
+              </div>
+
+              {/* Launch button */}
+              <button
+                onClick={() => onStart({ video: true, audio: true, matching })}
+                className="flex w-full items-center justify-center gap-3 rounded-full bg-white py-4 text-base font-black text-black shadow-2xl shadow-black/30 transition hover:bg-white/90 active:scale-[0.98]"
+              >
+                <svg className="h-5 w-5 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 6.5A3.5 3.5 0 0 0 1.5 10v4A3.5 3.5 0 0 0 5 17.5h7A3.5 3.5 0 0 0 15.5 14v-.17l3.55 2.28A1.6 1.6 0 0 0 21.5 14.76V9.24a1.6 1.6 0 0 0-2.45-1.35l-3.55 2.28V10A3.5 3.5 0 0 0 12 6.5H5Z" />
+                </svg>
+                Lancer un chat vidéo
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT PANEL — masonry preview grid */}
+          <div className="flex-1 overflow-y-auto bg-[#0a0a0a] scrollbar-hide">
+            <div className="columns-3 gap-1.5 p-1.5 space-y-1.5">
+              {PREVIEW_CARDS.map((card, i) => (
+                <div
+                  key={card.name}
+                  className="break-inside-avoid relative overflow-hidden rounded-2xl"
+                  style={{
+                    background: GRADIENTS[i % GRADIENTS.length],
+                    height: card.tall ? 260 : 185,
+                  }}
+                >
+                  {card.online && (
+                    <div className="absolute left-2.5 top-2.5 z-10 flex items-center gap-1 rounded-full bg-green-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                      <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                      ONLINE
+                    </div>
+                  )}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="select-none text-7xl font-black text-white/10">{card.name[0]}</span>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/85 to-transparent p-3 pt-8">
+                    <p className="text-sm font-bold text-white">
+                      {card.flag} {card.name}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>{/* end two panels */}
+      </div>{/* end desktop layout */}
 
       {showShop && (
         <GemShopModal
