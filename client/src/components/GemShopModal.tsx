@@ -114,7 +114,7 @@ export default function GemShopModal({
   balance,
   canClaimDaily,
   dailyReward,
-  onBuy,
+  onBuy: _onBuy,
   onClaimDaily,
   onClose,
 }: Props) {
@@ -215,7 +215,6 @@ export default function GemShopModal({
           </button>
 
           {GEM_PACKS.map((pack, index) => {
-            const total = pack.gems + pack.bonus;
             const level = GEM_PACKS.length - index - 1;
 
             return (
