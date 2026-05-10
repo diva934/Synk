@@ -18,7 +18,7 @@ type Page = "home" | "room";
 
 const SWIPE_COST_BASE = 9;
 const GENDER_FILTER_COST = 10;
-const DAILY_REWARD = 850;
+const DAILY_REWARD = 300;
 const PENDING_PROFILE_KEY = "randomchat:pending-profile";
 
 function getTodayKey(): string {
