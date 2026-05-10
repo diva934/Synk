@@ -1121,7 +1121,6 @@ function GenderSheet({
   onStart: () => void;
 }) {
   const [selected, setSelected] = useState<Gender>(value);
-  const [superMatch, setSuperMatch] = useState(false);
 
   const select = (g: Gender) => { setSelected(g); onChange(g); };
 
@@ -1228,27 +1227,15 @@ function GenderSheet({
             })}
           </div>
 
-          {/* Super Match */}
-          <div className="mt-5 flex items-start gap-3">
-            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-yellow-400/20">
-              <span className="text-base">⚡</span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-black">Super Match</span>
-              </div>
-              <p className="mt-0.5 text-xs leading-snug text-white/40">
-                La Super Rencontre trouve des personnes avec lesquelles vous aurez plus de chances de cliquer.
+          {/* Gem cost notice */}
+          {selected !== "any" && (
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#2d6ade]/10 px-4 py-3">
+              <span className="text-base">💎</span>
+              <p className="text-xs leading-snug text-white/70">
+                Filtrer par genre coûte <span className="font-black text-white">+10 gemmes</span> par swipe.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setSuperMatch((v) => !v)}
-              className={`mt-0.5 flex-shrink-0 h-6 w-11 rounded-full transition-colors ${superMatch ? "bg-[#2d6ade]" : "bg-white/20"}`}
-            >
-              <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform mt-0.5 mx-0.5 ${superMatch ? "translate-x-5" : "translate-x-0"}`} />
-            </button>
-          </div>
+          )}
         </div>
 
         {/* Actions */}

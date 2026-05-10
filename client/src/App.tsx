@@ -16,7 +16,8 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
 
 type Page = "home" | "room";
 
-const SWIPE_COST = 9;
+const SWIPE_COST_BASE = 9;
+const GENDER_FILTER_COST = 10;
 const DAILY_REWARD = 850;
 const PENDING_PROFILE_KEY = "randomchat:pending-profile";
 
@@ -200,11 +201,12 @@ export default function App() {
   };
 
   const handleSpendSwipe = () => {
-    if (!session || gemBalance < SWIPE_COST) return false;
+    const swipeCost = SWIPE_COST_BASE + (matchingPrefs.filters.gender !== "any" ? GENDER_FILTER_COST : 0);
+    if (!session || gemBalance < swipeCost) return false;
 
     setGemBalance((current) => {
-      if (current < SWIPE_COST) return current;
-      const next = current - SWIPE_COST;
+      if (current < swipeCost) return current;
+      const next = current - swipeCost;
       localStorage.setItem(`randomchat:gems:${session.user.id}`, String(next));
       return next;
     });
