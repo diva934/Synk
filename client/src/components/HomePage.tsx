@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import GenderAvatar from "./GenderAvatar";
 import GemShopModal from "./GemShopModal";
 import LogoMark from "./LogoMark";
@@ -1159,7 +1159,7 @@ function GenderSheet({
 
   const select = (g: Gender) => { setSelected(g); onChange(g); };
 
-  const options: Array<{ value: Gender; label: string; avatar: JSX.Element }> = [
+  const options: Array<{ value: Gender; label: string; avatar: ReactNode }> = [
     {
       value: "any",
       label: "Les deux",
