@@ -109,6 +109,7 @@ export default function HomePage({
 }: Props) {
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showCountrySheet, setShowCountrySheet] = useState(false);
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
   const previewVideoRef = useRef<HTMLVideoElement | null>(null);
   const desktopVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -185,9 +186,14 @@ export default function HomePage({
                 onChange={(value) => setMatching((c) => ({ ...c, filters: { ...c.filters, gender: value as Gender } }))}
                 options={TARGET_GENDERS} />
               <span className="mx-4 h-7 w-px bg-white/15" />
-              <FilterPill icon="globe" label="Pays" value={matching.filters.country}
-                onChange={(value) => setMatching((c) => ({ ...c, filters: { ...c.filters, country: value as Country } }))}
-                options={COUNTRIES} />
+              <button
+                type="button"
+                onClick={() => setShowCountrySheet(true)}
+                className="flex items-center justify-center gap-2 text-lg font-black text-white"
+              >
+                <FilterIcon type="globe" />
+                <span>Pays</span>
+              </button>
             </div>
             <button onClick={() => onStart({ video: true, audio: true, matching })}
               className="group relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white transition-all duration-200 hover:opacity-90 active:scale-[0.98] btn-swipe"
@@ -359,6 +365,16 @@ export default function HomePage({
           onProfileEditSave={onProfileEditSave}
           onClose={() => setShowProfile(false)}
           onSignOut={onSignOut}
+        />
+      )}
+
+      {showCountrySheet && (
+        <CountrySheet
+          value={matching.filters.country}
+          profileCountry={matching.profile.country}
+          onChange={(c) => setMatching((m) => ({ ...m, filters: { ...m.filters, country: c } }))}
+          onClose={() => setShowCountrySheet(false)}
+          onStart={() => { setShowCountrySheet(false); onStart({ video: true, audio: true, matching }); }}
         />
       )}
 
@@ -1107,5 +1123,145 @@ function ProfileActionIcon({ icon }: { icon: "profile" | "settings" | "contact" 
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 21a8 8 0 0 1 16 0" />
     </svg>
+  );
+}
+
+// ─── Country bottom sheet ─────────────────────────────────────────────────────
+
+const COUNTRY_LIST: Array<{ value: Exclude<Country, "any">; label: string }> = [
+  { value: "DZ", label: "Algérie" },
+  { value: "MA", label: "Maroc" },
+  { value: "TN", label: "Tunisie" },
+  { value: "BE", label: "Belgique" },
+  { value: "FR", label: "France" },
+  { value: "CH", label: "Suisse" },
+  { value: "CA", label: "Canada" },
+  { value: "US", label: "États-Unis" },
+  { value: "GB", label: "Royaume-Uni" },
+  { value: "DE", label: "Allemagne" },
+  { value: "ES", label: "Espagne" },
+  { value: "IT", label: "Italie" },
+];
+
+function CountrySheet({
+  value,
+  profileCountry,
+  onChange,
+  onClose,
+  onStart,
+}: {
+  value: Country;
+  profileCountry: Exclude<Country, "any">;
+  onChange: (c: Country) => void;
+  onClose: () => void;
+  onStart: () => void;
+}) {
+  const isRecommended = value === profileCountry;
+  const isWorldwide   = value === "any";
+  const isSpecific    = !isRecommended && !isWorldwide;
+
+  return (
+    <div className="absolute inset-0 z-[70] flex flex-col justify-end">
+      {/* backdrop */}
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+      {/* sheet */}
+      <div className="relative flex max-h-[88dvh] flex-col rounded-t-3xl bg-[#1c1c1e] text-white shadow-2xl overflow-hidden">
+        {/* handle */}
+        <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div className="h-1 w-10 rounded-full bg-white/20" />
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-5 pb-4 scrollbar-hide">
+          <h2 className="py-4 text-xl font-black">Choix du pays</h2>
+
+          {/* ── Presets ── */}
+          <div className="space-y-1">
+            {/* Recommandé */}
+            <button
+              type="button"
+              onClick={() => onChange(profileCountry)}
+              className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
+            >
+              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${isRecommended ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+                {isRecommended && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
+              </span>
+              <span className={`text-base font-bold ${isRecommended ? "text-white" : "text-white/70"}`}>Recommandé</span>
+            </button>
+
+            {/* Mondial */}
+            <button
+              type="button"
+              onClick={() => onChange("any")}
+              className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
+            >
+              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${isWorldwide ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+                {isWorldwide && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
+              </span>
+              <span className={`text-base font-bold ${isWorldwide ? "text-white" : "text-white/70"}`}>Mondial</span>
+            </button>
+
+            {/* France et autres pays */}
+            <button
+              type="button"
+              onClick={() => onChange("FR")}
+              className="flex w-full items-start gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
+            >
+              <span className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${value === "FR" && isSpecific ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+                {value === "FR" && isSpecific && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
+              </span>
+              <div className="min-w-0 flex-1 text-left">
+                <div className="text-base font-bold text-white/70">France et autres pays</div>
+                <div className="mt-0.5 flex items-center gap-2">
+                  <span className="text-xs font-bold text-[#00e676]">Recommandé</span>
+                </div>
+                <div className="mt-0.5 text-xs text-white/40 leading-snug">Tu pourrais matcher avec des personnes d'autres pays.</div>
+              </div>
+              {/* toggle decoratif */}
+              <div className={`mt-1 flex-shrink-0 h-6 w-11 rounded-full transition-colors ${value === "FR" && isSpecific ? "bg-[#00e676]" : "bg-white/20"}`}>
+                <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform mt-0.5 mx-0.5 ${value === "FR" && isSpecific ? "translate-x-5" : "translate-x-0"}`} />
+              </div>
+            </button>
+          </div>
+
+          {/* ── Specific countries ── */}
+          <p className="mt-5 mb-3 text-base font-black">Sélectionne le pays de tes matchs</p>
+          <div className="space-y-1">
+            {COUNTRY_LIST.map((c) => (
+              <button
+                key={c.value}
+                type="button"
+                onClick={() => onChange(c.value)}
+                className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
+              >
+                <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${value === c.value ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+                  {value === c.value && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
+                </span>
+                <span className={`text-base font-bold ${value === c.value ? "text-white" : "text-white/70"}`}>{c.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Bottom actions ── */}
+        <div className="flex-shrink-0 px-5 pb-8 pt-3 border-t border-white/8">
+          <button
+            type="button"
+            onClick={onStart}
+            className="relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-black btn-swipe"
+            style={{ background: "#00e676" }}
+          >
+            Lancer un chat vidéo
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-3 w-full py-2 text-sm font-semibold text-white/40"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
