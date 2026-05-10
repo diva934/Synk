@@ -433,40 +433,6 @@ function MediaPermissionPrompt({ onDismiss }: { onDismiss: () => void }) {
   );
 }
 
-function FilterPill<T extends string>({
-  icon,
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  icon: "gender" | "globe";
-  label: string;
-  value: T;
-  onChange: (value: T) => void;
-  options: Array<{ value: T; label: string }>;
-}) {
-  return (
-    <label className="relative block min-w-0 cursor-pointer">
-      <span className="pointer-events-none flex items-center justify-center gap-2 text-lg font-black text-white">
-        <FilterIcon type={icon} />
-        <span>{label}</span>
-      </span>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value as T)}
-        aria-label={label}
-        className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-      >
-        {options.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-}
 
 function FilterIcon({ type }: { type: "gender" | "globe" }) {
   if (type === "globe") {
