@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { io, Socket } from "socket.io-client";
+import AgeGate from "./components/AgeGate";
 import AuthPage from "./components/AuthPage";
 import GemShopModal from "./components/GemShopModal";
 import HomePage, { ProfileSheet, readProfileEditDraft, type ProfileEditDraft } from "./components/HomePage";
@@ -70,6 +71,7 @@ export default function App() {
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   const [socket, setSocket] = useState<Socket | null>(null);
+  const [pendingPrefs, setPendingPrefs] = useState<MediaPreferences | null>(null);
 
   useEffect(() => {
     if (!supabase) {
@@ -219,13 +221,21 @@ export default function App() {
   };
 
   const handleStart = async (prefs: MediaPreferences) => {
+    // Stocker les prefs et afficher AgeGate — la mise en relation se fait après vérification
+    if (session) {
+      setMatchingPrefs(prefs.matching);
+      localStorage.setItem(`randomchat:matching:${session.user.id}`, JSON.stringify(prefs.matching));
+    }
+    setPendingPrefs(prefs);
+  };
+
+  const handleAgeVerified = async () => {
+    if (!pendingPrefs) return;
+    const prefs = pendingPrefs;
+    setPendingPrefs(null);
+
     setMediaError(null);
     try {
-      if (session) {
-        setMatchingPrefs(prefs.matching);
-        localStorage.setItem(`randomchat:matching:${session.user.id}`, JSON.stringify(prefs.matching));
-      }
-
       localStream?.getTracks().forEach((track) => track.stop());
 
       const stream =
@@ -270,6 +280,11 @@ export default function App() {
         }
       }
     }
+  };
+
+  const handleAgeRejected = (_reason: string) => {
+    setPendingPrefs(null);
+    // AgeGate affiche son propre écran de blocage — rien à faire ici
   };
 
   const handlePrepareHomeCamera = async () => {
@@ -383,6 +398,13 @@ export default function App() {
           onOpenProfile={() => setShowProfile(true)}
           profilePhotoUrl={profileEdit.primaryPhoto}
           onlineCount={onlineCount}
+        />
+      )}
+      {/* AgeGate : affiché entre le clic "Démarrer" et la mise en relation */}
+      {pendingPrefs && (
+        <AgeGate
+          onVerified={handleAgeVerified}
+          onRejected={handleAgeRejected}
         />
       )}
       {showAgeVerification && (
