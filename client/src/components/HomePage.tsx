@@ -1148,13 +1148,15 @@ type CountryMode = "recommended" | "worldwide" | "france-plus" | Exclude<Country
 function valueToMode(value: Country, profileCountry: Exclude<Country, "any">): CountryMode {
   if (value === "any") return "worldwide";
   if (value === profileCountry) return "recommended";
+  // "France et autres pays" : FR sélectionné alors que le profil n'est pas FR
+  if (value === "FR" && profileCountry !== "FR") return "france-plus";
   return value as Exclude<Country, "any">;
 }
 
 function modeToValue(mode: CountryMode, profileCountry: Exclude<Country, "any">): Country {
   if (mode === "recommended") return profileCountry;
   if (mode === "worldwide") return "any";
-  if (mode === "france-plus") return "any"; // France + autres = accepter tout le monde
+  if (mode === "france-plus") return "FR";
   return mode;
 }
 
@@ -1219,8 +1221,8 @@ function CountrySheet({
               </span>
             </button>
 
-            {/* France et autres pays */}
-            <button type="button" onClick={() => select("france-plus")}
+            {/* France et autres pays — masqué si le profil est déjà FR */}
+            {profileCountry !== "FR" && <button type="button" onClick={() => select("france-plus")}
               className="flex w-full items-start gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5">
               <span className="mt-0.5"><Radio active={mode === "france-plus"} /></span>
               <div className="min-w-0 flex-1 text-left">
@@ -1237,7 +1239,7 @@ function CountrySheet({
               <div className={`mt-1 flex-shrink-0 h-6 w-11 rounded-full transition-colors ${mode === "france-plus" ? "bg-[#2d6ade]" : "bg-white/20"}`}>
                 <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform mt-0.5 mx-0.5 ${mode === "france-plus" ? "translate-x-5" : "translate-x-0"}`} />
               </div>
-            </button>
+            </button>}
           </div>
 
           {/* ── Pays spécifiques ── */}
