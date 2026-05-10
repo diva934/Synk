@@ -110,6 +110,7 @@ export default function HomePage({
   const [showShop, setShowShop] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showCountrySheet, setShowCountrySheet] = useState(false);
+  const [showGenderSheet, setShowGenderSheet] = useState(false);
   const [matching, setMatching] = useState<MatchingPreferences>(matchingPrefs);
   const previewVideoRef = useRef<HTMLVideoElement | null>(null);
   const desktopVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -182,9 +183,14 @@ export default function HomePage({
           <div className="flex flex-1" />
           <div className="flex-shrink-0 pb-2">
             <div className="mb-4 grid grid-cols-[1fr_auto_1fr] items-center rounded-full border border-white/25 bg-white/[0.11] px-5 py-4 shadow-2xl shadow-black/40 backdrop-blur-2xl">
-              <FilterPill icon="gender" label="Genre" value={matching.filters.gender}
-                onChange={(value) => setMatching((c) => ({ ...c, filters: { ...c.filters, gender: value as Gender } }))}
-                options={TARGET_GENDERS} />
+              <button
+                type="button"
+                onClick={() => setShowGenderSheet(true)}
+                className="flex items-center justify-center gap-2 text-lg font-black text-white"
+              >
+                <FilterIcon type="gender" />
+                <span>Genre</span>
+              </button>
               <span className="mx-4 h-7 w-px bg-white/15" />
               <button
                 type="button"
@@ -365,6 +371,15 @@ export default function HomePage({
           onProfileEditSave={onProfileEditSave}
           onClose={() => setShowProfile(false)}
           onSignOut={onSignOut}
+        />
+      )}
+
+      {showGenderSheet && (
+        <GenderSheet
+          value={matching.filters.gender}
+          onChange={(g) => setMatching((m) => ({ ...m, filters: { ...m.filters, gender: g } }))}
+          onClose={() => setShowGenderSheet(false)}
+          onStart={() => { setShowGenderSheet(false); onStart({ video: true, audio: true, matching }); }}
         />
       )}
 
@@ -1123,6 +1138,173 @@ function ProfileActionIcon({ icon }: { icon: "profile" | "settings" | "contact" 
       <path strokeLinecap="round" strokeLinejoin="round" d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" />
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 21a8 8 0 0 1 16 0" />
     </svg>
+  );
+}
+
+// ─── Gender bottom sheet ──────────────────────────────────────────────────────
+
+function GenderSheet({
+  value,
+  onChange,
+  onClose,
+  onStart,
+}: {
+  value: Gender;
+  onChange: (g: Gender) => void;
+  onClose: () => void;
+  onStart: () => void;
+}) {
+  const [selected, setSelected] = useState<Gender>(value);
+  const [superMatch, setSuperMatch] = useState(false);
+
+  const select = (g: Gender) => { setSelected(g); onChange(g); };
+
+  const options: Array<{ value: Gender; label: string; avatar: JSX.Element }> = [
+    {
+      value: "any",
+      label: "Les deux",
+      avatar: (
+        <svg viewBox="0 0 80 64" fill="none" className="h-16 w-20">
+          <defs>
+            <radialGradient id="gsBoth1" cx="35%" cy="15%" r="82%">
+              <stop offset="0%" stopColor="#fff" /><stop offset="28%" stopColor="#ff8bf0" />
+              <stop offset="65%" stopColor="#c300b8" /><stop offset="100%" stopColor="#350038" />
+            </radialGradient>
+            <radialGradient id="gsBoth2" cx="35%" cy="15%" r="82%">
+              <stop offset="0%" stopColor="#fff" /><stop offset="28%" stopColor="#72dcff" />
+              <stop offset="65%" stopColor="#0057ff" /><stop offset="100%" stopColor="#001448" />
+            </radialGradient>
+          </defs>
+          {/* femme (derrière) */}
+          <path d="M20 27c0-10 5-16 12-16s12 6 12 16c0 4 2 7 3 9-3 3-8 3-15 3s-12 0-15-3c1-2 3-5 3-9Z" fill="url(#gsBoth1)" stroke="#ff5ee8" strokeWidth="1.5"/>
+          <path d="M8 55c3-9 9-13 18-13s15 4 18 13" fill="url(#gsBoth1)" stroke="#ff5ee8" strokeWidth="1.5" strokeLinecap="round"/>
+          {/* homme (devant) */}
+          <circle cx="52" cy="22" r="10" fill="url(#gsBoth2)" stroke="#37c8ff" strokeWidth="1.5"/>
+          <path d="M34 55c3-10 9-15 18-15s15 5 18 15" fill="url(#gsBoth2)" stroke="#37c8ff" strokeWidth="1.5" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+    {
+      value: "female",
+      label: "Femme",
+      avatar: (
+        <svg viewBox="0 0 64 64" fill="none" className="h-16 w-16">
+          <defs>
+            <radialGradient id="gsFem" cx="35%" cy="15%" r="82%">
+              <stop offset="0%" stopColor="#fff" /><stop offset="28%" stopColor="#ff8bf0" />
+              <stop offset="65%" stopColor="#c300b8" /><stop offset="100%" stopColor="#350038" />
+            </radialGradient>
+          </defs>
+          <path d="M18 29c0-11 6-18 14-18s14 7 14 18c0 5 3 8 4 11-4 4-10 4-18 4s-14 0-18-4c1-3 4-6 4-11Z" fill="url(#gsFem)" stroke="#ff5ee8" strokeWidth="1.8"/>
+          <path d="M12 58c3.3-10 10.4-15.5 20-15.5S48.7 48 52 58" fill="url(#gsFem)" stroke="#ff5ee8" strokeWidth="1.8" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+    {
+      value: "male",
+      label: "Homme",
+      avatar: (
+        <svg viewBox="0 0 64 64" fill="none" className="h-16 w-16">
+          <defs>
+            <radialGradient id="gsMal" cx="35%" cy="15%" r="82%">
+              <stop offset="0%" stopColor="#fff" /><stop offset="28%" stopColor="#72dcff" />
+              <stop offset="65%" stopColor="#0057ff" /><stop offset="100%" stopColor="#001448" />
+            </radialGradient>
+          </defs>
+          <circle cx="32" cy="22" r="11.5" fill="url(#gsMal)" stroke="#37c8ff" strokeWidth="1.8"/>
+          <path d="M10 58c3.7-11.5 11.2-17.5 22-17.5S50.3 46.5 54 58" fill="url(#gsMal)" stroke="#37c8ff" strokeWidth="1.8" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <div className="absolute inset-0 z-[70] flex flex-col justify-end">
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+
+      <div className="relative flex flex-col rounded-t-3xl bg-[#1c1c1e] text-white shadow-2xl overflow-hidden">
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="h-1 w-10 rounded-full bg-white/20" />
+        </div>
+
+        <div className="px-5 pb-2">
+          <h2 className="pt-3 pb-1 text-xl font-black">Préférence de genre</h2>
+          <p className="text-sm text-white/50">Sélectionne le genre que tu préfères</p>
+        </div>
+
+        <div className="px-5 pb-3">
+          {/* Matcher avec */}
+          <div className="mb-4 flex items-center justify-between">
+            <span className="text-base font-black">Matcher avec</span>
+          </div>
+
+          {/* Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            {options.map((opt) => {
+              const active = selected === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => select(opt.value)}
+                  className={`flex flex-col items-center justify-end gap-2 rounded-2xl pb-3 pt-4 transition active:scale-[0.97] ${
+                    active
+                      ? "bg-[#2d6ade]/20 ring-2 ring-[#2d6ade]"
+                      : "bg-white/6 ring-1 ring-white/10"
+                  }`}
+                >
+                  {opt.avatar}
+                  <span className={`text-sm font-black ${active ? "text-white" : "text-white/50"}`}>
+                    {opt.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Super Match */}
+          <div className="mt-5 flex items-start gap-3">
+            <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-yellow-400/20">
+              <span className="text-base">⚡</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-black">Super Match</span>
+              </div>
+              <p className="mt-0.5 text-xs leading-snug text-white/40">
+                La Super Rencontre trouve des personnes avec lesquelles vous aurez plus de chances de cliquer.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setSuperMatch((v) => !v)}
+              className={`mt-0.5 flex-shrink-0 h-6 w-11 rounded-full transition-colors ${superMatch ? "bg-[#2d6ade]" : "bg-white/20"}`}
+            >
+              <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform mt-0.5 mx-0.5 ${superMatch ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="px-5 pb-8 pt-3 border-t border-white/8">
+          <button
+            type="button"
+            onClick={onStart}
+            className="relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white btn-swipe"
+            style={{ background: "#2d6ade" }}
+          >
+            Lancer un chat vidéo
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-3 w-full py-2 text-sm font-semibold text-white/40"
+          >
+            Enregistrer
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
