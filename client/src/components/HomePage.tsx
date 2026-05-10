@@ -1183,7 +1183,7 @@ function CountrySheet({
               onClick={() => onChange(profileCountry)}
               className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
             >
-              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${isRecommended ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${isRecommended ? "border-[#2d6ade] bg-[#2d6ade]" : "border-white/30"}`}>
                 {isRecommended && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
               </span>
               <span className={`text-base font-bold ${isRecommended ? "text-white" : "text-white/70"}`}>Recommandé</span>
@@ -1195,7 +1195,7 @@ function CountrySheet({
               onClick={() => onChange("any")}
               className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
             >
-              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${isWorldwide ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+              <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${isWorldwide ? "border-[#2d6ade] bg-[#2d6ade]" : "border-white/30"}`}>
                 {isWorldwide && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
               </span>
               <span className={`text-base font-bold ${isWorldwide ? "text-white" : "text-white/70"}`}>Mondial</span>
@@ -1207,18 +1207,18 @@ function CountrySheet({
               onClick={() => onChange("FR")}
               className="flex w-full items-start gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
             >
-              <span className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${value === "FR" && isSpecific ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+              <span className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${value === "FR" && isSpecific ? "border-[#2d6ade] bg-[#2d6ade]" : "border-white/30"}`}>
                 {value === "FR" && isSpecific && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
               </span>
               <div className="min-w-0 flex-1 text-left">
                 <div className="text-base font-bold text-white/70">France et autres pays</div>
                 <div className="mt-0.5 flex items-center gap-2">
-                  <span className="text-xs font-bold text-[#00e676]">Recommandé</span>
+                  <span className="text-xs font-bold text-[#2d6ade]">Recommandé</span>
                 </div>
                 <div className="mt-0.5 text-xs text-white/40 leading-snug">Tu pourrais matcher avec des personnes d'autres pays.</div>
               </div>
               {/* toggle decoratif */}
-              <div className={`mt-1 flex-shrink-0 h-6 w-11 rounded-full transition-colors ${value === "FR" && isSpecific ? "bg-[#00e676]" : "bg-white/20"}`}>
+              <div className={`mt-1 flex-shrink-0 h-6 w-11 rounded-full transition-colors ${value === "FR" && isSpecific ? "bg-[#2d6ade]" : "bg-white/20"}`}>
                 <div className={`h-5 w-5 rounded-full bg-white shadow transition-transform mt-0.5 mx-0.5 ${value === "FR" && isSpecific ? "translate-x-5" : "translate-x-0"}`} />
               </div>
             </button>
@@ -1234,7 +1234,7 @@ function CountrySheet({
                 onClick={() => onChange(c.value)}
                 className="flex w-full items-center gap-3 rounded-2xl px-4 py-4 transition active:bg-white/5"
               >
-                <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${value === c.value ? "border-[#00e676] bg-[#00e676]" : "border-white/30"}`}>
+                <span className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border-2 ${value === c.value ? "border-[#2d6ade] bg-[#2d6ade]" : "border-white/30"}`}>
                   {value === c.value && <span className="h-2.5 w-2.5 rounded-full bg-white" />}
                 </span>
                 <span className={`text-base font-bold ${value === c.value ? "text-white" : "text-white/70"}`}>{c.label}</span>
@@ -1248,8 +1248,8 @@ function CountrySheet({
           <button
             type="button"
             onClick={onStart}
-            className="relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-black btn-swipe"
-            style={{ background: "#00e676" }}
+            className="relative w-full overflow-hidden rounded-full py-4 text-lg font-black text-white btn-swipe"
+            style={{ background: "#2d6ade" }}
           >
             Lancer un chat vidéo
           </button>
