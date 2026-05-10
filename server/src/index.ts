@@ -50,6 +50,11 @@ const PROFILE_COUNTRIES = new Set<MatchProfile["country"]>([
 ]);
 const FILTER_COUNTRIES = new Set<Country>(["any", ...PROFILE_COUNTRIES]);
 
+// ─── Config ───────────────────────────────────────────────────────────────────
+
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+
 // ─── App setup ────────────────────────────────────────────────────────────────
 
 const app = express();
@@ -83,6 +88,9 @@ const socketPreferences = new Map<string, MatchingPreferences>();
 
 // socketId → number of times reported this session
 const reportCounts = new Map<string, number>();
+
+// socketId → client IP (captured at connection time)
+const socketIps = new Map<string, string>();
 
 const REPORT_BAN_THRESHOLD = 3;
 
@@ -203,11 +211,50 @@ function joinQueue(socketId: string, preferences?: unknown): void {
   }
 }
 
+// ─── Ban helper ───────────────────────────────────────────────────────────────
+
+async function callBanUser(sessionId: string, ip: string, reason: string, reportsCount: number): Promise<void> {
+  if (!SUPABASE_URL) {
+    console.warn("[ban-user] SUPABASE_URL not set — skipping ban logging");
+    return;
+  }
+  try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      "x-forwarded-for": ip,
+    };
+    if (SUPABASE_ANON_KEY) {
+      headers["Authorization"] = `Bearer ${SUPABASE_ANON_KEY}`;
+    }
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/ban-user`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ session_id: sessionId, reason, reports_count: reportsCount }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("[ban-user] HTTP error:", res.status, text);
+    } else {
+      const json = await res.json() as { ok?: boolean; ban_id?: string };
+      console.log(`[ban-user] logged — ban_id: ${json.ban_id ?? "??"}`);
+    }
+  } catch (err) {
+    console.error("[ban-user] fetch failed:", err);
+  }
+}
+
 // ─── Socket.IO logic ──────────────────────────────────────────────────────────
 
 io.on("connection", (socket: Socket) => {
   onlineCount++;
   io.emit("online-count", onlineCount);
+
+  // Capture client IP for ban logging
+  const clientIp =
+    (socket.handshake.headers["x-forwarded-for"] as string | undefined)?.split(",")[0].trim() ??
+    socket.handshake.address ??
+    "0.0.0.0";
+  socketIps.set(socket.id, clientIp);
 
   // ── Matching ────────────────────────────────────────────────────────────────
 
@@ -289,12 +336,17 @@ io.on("connection", (socket: Socket) => {
     console.log(`[report] ${socket.id} → ${targetSocketId} (${reason}) — total: ${count}`);
 
     if (count >= REPORT_BAN_THRESHOLD) {
+      // Log the ban in Supabase (non-blocking)
+      const ip = socketIps.get(targetSocketId) ?? "0.0.0.0";
+      void callBanUser(targetSocketId, ip, reason, count);
+
       const targetSocket = io.sockets.sockets.get(targetSocketId);
       if (targetSocket) {
         targetSocket.emit("banned");
         leaveCurrentRoom(targetSocketId);
         removeFromQueue(targetSocketId);
         reportCounts.delete(targetSocketId);
+        socketIps.delete(targetSocketId);
         targetSocket.disconnect(true);
       }
     }
@@ -309,6 +361,7 @@ io.on("connection", (socket: Socket) => {
     leaveCurrentRoom(socket.id);
     socketPreferences.delete(socket.id);
     reportCounts.delete(socket.id);
+    socketIps.delete(socket.id);
   });
 });
 

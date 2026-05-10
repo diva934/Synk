@@ -626,6 +626,7 @@ function ProfileMorePage({
   const [marketingNotifications, setMarketingNotifications] = useState(false);
   const [onlineFriends, setOnlineFriends] = useState(true);
   const [newFollowers, setNewFollowers] = useState(true);
+  const [showCgu, setShowCgu] = useState(false);
 
   return (
     <div
@@ -669,8 +670,196 @@ function ProfileMorePage({
           onChange={setNewFollowers}
         />
 
+        <MoreSectionTitle label="Légal" className="mt-9" />
+        <MoreRow
+          label="Conditions Générales d'Utilisation"
+          onClick={() => setShowCgu(true)}
+        />
+        <MoreRow
+          label="Politique de confidentialité"
+          onClick={() => setShowCgu(true)}
+        />
+      </div>
+
+      {showCgu && <CguPage onClose={() => setShowCgu(false)} />}
+    </div>
+  );
+}
+
+// ─── CGU ──────────────────────────────────────────────────────────────────────
+
+function CguPage({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex flex-col overflow-hidden bg-[#0f0f13] text-white"
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header */}
+      <div className="flex flex-shrink-0 items-center gap-3 border-b border-white/8 px-5 pb-5 pt-12">
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-white transition hover:bg-white/10"
+          title="Retour"
+        >
+          <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.4}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+        <div>
+          <h1 className="text-2xl font-black leading-tight">Conditions Générales</h1>
+          <p className="text-sm text-white/40">Dernière mise à jour : 10 mai 2026</p>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-16 scrollbar-hide">
+        <CguSection title="1. Présentation">
+          <CguParagraph>
+            Synk (ci-après « le Service ») est une application de rencontre vidéo en temps réel permettant à des utilisateurs anonymes d'entrer en contact par flux audio et vidéo. Le Service est édité et exploité par Synk, joignable à l'adresse <span className="text-white/70">contact@synk.app</span>.
+          </CguParagraph>
+          <CguParagraph>
+            L'accès et l'utilisation du Service impliquent l'acceptation pleine et entière des présentes Conditions Générales d'Utilisation (« CGU »). Si vous n'acceptez pas ces conditions, vous devez cesser immédiatement d'utiliser le Service.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="2. Conditions d'accès — Majorité">
+          <CguParagraph>
+            Le Service est exclusivement réservé aux personnes majeures, c'est-à-dire âgées d'au moins 18 ans (ou de l'âge de la majorité légale dans leur pays de résidence si celui-ci est supérieur).
+          </CguParagraph>
+          <CguParagraph>
+            En accédant au Service, vous déclarez sur l'honneur avoir atteint l'âge requis. Toute fausse déclaration engage votre responsabilité personnelle. Synk se réserve le droit d'utiliser une estimation d'âge par analyse faciale locale à des fins de vérification ; aucune image n'est transmise ni stockée.
+          </CguParagraph>
+          <CguParagraph>
+            L'accès peut être refusé ou suspendu à tout moment si Synk a des raisons de suspecter que l'utilisateur ne remplit pas cette condition.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="3. Description du Service">
+          <CguParagraph>
+            Synk met en relation aléatoire deux utilisateurs via un flux vidéo/audio chiffré en pair-à-pair (WebRTC). L'utilisateur peut à tout moment mettre fin à une conversation et en démarrer une nouvelle. Des filtres de correspondance (genre, pays) peuvent être activés moyennant des gemmes, la monnaie virtuelle du Service.
+          </CguParagraph>
+          <CguParagraph>
+            Les gemmes sont attribuées gratuitement chaque semaine et peuvent être achetées en complément. Elles n'ont aucune valeur monétaire, ne sont ni remboursables ni échangeables.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="4. Obligations de l'utilisateur">
+          <CguParagraph>En utilisant le Service, vous vous engagez à :</CguParagraph>
+          <CguList items={[
+            "Utiliser le Service conformément aux lois en vigueur dans votre pays de résidence.",
+            "Ne pas usurper l'identité d'une autre personne.",
+            "Respecter les autres utilisateurs et ne pas adopter un comportement harcelant, intimidant ou discriminatoire.",
+            "Ne pas diffuser de contenu illégal, offensant, pornographique impliquant des mineurs, ou portant atteinte aux droits d'autrui.",
+            "Ne pas tenter de contourner les mécanismes de modération ou de ban.",
+            "Ne pas utiliser de bots, scripts ou tout autre moyen automatisé pour accéder au Service.",
+          ]} />
+        </CguSection>
+
+        <CguSection title="5. Contenus interdits">
+          <CguParagraph>Il est strictement interdit de diffuser via le Service :</CguParagraph>
+          <CguList items={[
+            "Tout contenu à caractère pédopornographique ou impliquant des mineurs de quelque manière que ce soit.",
+            "Des images ou propos à caractère raciste, antisémite, homophobe, transphobe ou incitant à la haine.",
+            "Des données personnelles d'un tiers sans son consentement explicite.",
+            "Tout contenu portant atteinte à la vie privée, au droit à l'image ou à la dignité humaine.",
+            "Des communications à visée frauduleuse, d'hameçonnage ou de spam.",
+          ]} />
+          <CguParagraph>
+            Tout contenu illégal sera signalé aux autorités compétentes. Synk coopère pleinement avec les forces de l'ordre.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="6. Modération et signalement">
+          <CguParagraph>
+            Synk met à disposition un système de signalement accessible depuis chaque conversation. Tout utilisateur signalé à plusieurs reprises pour comportement abusif peut être banni temporairement ou définitivement, sans préavis.
+          </CguParagraph>
+          <CguParagraph>
+            En cas de ban, l'adresse IP est enregistrée pour une durée de 12 mois afin d'empêcher tout contournement. Pour contester une suspension, contactez : <span className="text-white/70">contact@synk.app</span>.
+          </CguParagraph>
+          <CguParagraph>
+            Synk n'est pas en mesure de modérer l'ensemble des conversations en temps réel. La responsabilité de l'éditeur ne peut être engagée pour les contenus produits par les utilisateurs, sous réserve de son obligation de retrait dès notification.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="7. Données personnelles">
+          <CguParagraph>
+            Conformément au Règlement Général sur la Protection des Données (RGPD – UE 2016/679), vous disposez d'un droit d'accès, de rectification, d'effacement et d'opposition concernant vos données personnelles.
+          </CguParagraph>
+          <CguParagraph>
+            Données collectées : adresse e-mail (inscription), adresse IP (modération), préférences de matching (stockées localement). Les flux vidéo et audio ne sont jamais enregistrés ni stockés par Synk.
+          </CguParagraph>
+          <CguParagraph>
+            Pour exercer vos droits : <span className="text-white/70">contact@synk.app</span>. Pour toute réclamation, vous pouvez saisir la CNIL (<span className="text-white/70">cnil.fr</span>).
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="8. Propriété intellectuelle">
+          <CguParagraph>
+            L'ensemble des éléments constituant le Service (logo, interface, code, textes) sont la propriété exclusive de Synk et sont protégés par le droit de la propriété intellectuelle. Toute reproduction, copie ou exploitation non autorisée est interdite.
+          </CguParagraph>
+          <CguParagraph>
+            Les contenus diffusés par les utilisateurs lors des conversations leur appartiennent. En les transmettant via le Service, ils accordent à Synk une licence limitée, non exclusive, aux seules fins techniques nécessaires au fonctionnement du Service (routage du flux en temps réel).
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="9. Limitation de responsabilité">
+          <CguParagraph>
+            Synk est un hébergeur de contenus au sens de la loi pour la Confiance dans l'Économie Numérique (LCEN). Synk ne peut être tenu responsable des contenus produits par les utilisateurs ni des dommages directs ou indirects résultant de l'utilisation du Service.
+          </CguParagraph>
+          <CguParagraph>
+            Le Service est fourni « en l'état ». Synk ne garantit pas une disponibilité continue et se réserve le droit de l'interrompre à tout moment pour maintenance ou toute autre raison.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="10. Modifications des CGU">
+          <CguParagraph>
+            Synk se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés des modifications substantielles par tout moyen approprié. La poursuite de l'utilisation du Service après notification vaut acceptation des nouvelles conditions.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="11. Résiliation">
+          <CguParagraph>
+            Synk peut résilier ou suspendre l'accès au Service sans préavis en cas de violation des présentes CGU, d'activité frauduleuse, ou pour toute autre raison légitime. L'utilisateur peut supprimer son compte à tout moment depuis les paramètres ou en contactant le support.
+          </CguParagraph>
+        </CguSection>
+
+        <CguSection title="12. Droit applicable et juridiction">
+          <CguParagraph>
+            Les présentes CGU sont régies par le droit français. En cas de litige, et à défaut de résolution amiable, les tribunaux français seront seuls compétents.
+          </CguParagraph>
+          <CguParagraph>
+            Contact : <span className="text-white/70">contact@synk.app</span>
+          </CguParagraph>
+        </CguSection>
       </div>
     </div>
+  );
+}
+
+function CguSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="mt-8">
+      <h2 className="mb-3 text-lg font-black text-white">{title}</h2>
+      <div className="flex flex-col gap-3">{children}</div>
+    </div>
+  );
+}
+
+function CguParagraph({ children }: { children: ReactNode }) {
+  return <p className="text-sm leading-relaxed text-white/55">{children}</p>;
+}
+
+function CguList({ items }: { items: string[] }) {
+  return (
+    <ul className="flex flex-col gap-2 pl-1">
+      {items.map((item, i) => (
+        <li key={i} className="flex items-start gap-2 text-sm leading-relaxed text-white/55">
+          <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-[#2d6ade]" />
+          {item}
+        </li>
+      ))}
+    </ul>
   );
 }
 

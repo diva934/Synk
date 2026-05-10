@@ -14,6 +14,7 @@ import { supabase } from "./lib/supabase";
 import type { MatchingPreferences, MediaPreferences, MatchProfile } from "./types";
 
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:3001";
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 
 type Page = "home" | "room";
 
@@ -72,6 +73,7 @@ export default function App() {
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [pendingPrefs, setPendingPrefs] = useState<MediaPreferences | null>(null);
+  const [isBanned, setIsBanned] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
@@ -237,7 +239,28 @@ export default function App() {
     setPendingPrefs(prefs);
   };
 
+  const checkAccess = async (): Promise<boolean> => {
+    if (!SUPABASE_URL) return true;
+    try {
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/check-access`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      const json = await res.json() as { allowed?: boolean };
+      return json.allowed ?? true;
+    } catch {
+      return true; // fail-open : si l'Edge Function est inaccessible, on laisse passer
+    }
+  };
+
   const doStartRoom = async (prefs: MediaPreferences) => {
+    // ── Vérification ban IP avant d'entrer en salle ──────────────────────────
+    const allowed = await checkAccess();
+    if (!allowed) {
+      setIsBanned(true);
+      return;
+    }
+
     setMediaError(null);
     try {
       localStream?.getTracks().forEach((track) => track.stop());
@@ -437,6 +460,33 @@ export default function App() {
         />
       )}
       <SafariInstallPrompt />
+
+      {/* ── Écran de ban IP (check-access retourne allowed:false) ──────────── */}
+      {isBanned && (
+        <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center bg-[#0f0f13] px-8 text-center">
+          <div
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{ background: "radial-gradient(circle, rgba(239,68,68,0.10) 0%, transparent 70%)" }}
+          />
+          <div className="relative z-10 flex flex-col items-center gap-5">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-500/15 ring-1 ring-red-500/30 text-4xl">
+              🚫
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-white">Accès suspendu</h2>
+              <p className="mt-3 max-w-xs text-sm leading-relaxed text-white/50">
+                Votre accès à Synk a été temporairement suspendu suite à des signalements répétés.
+              </p>
+            </div>
+            <p className="text-xs text-white/30">
+              Contestation :{" "}
+              <a href="mailto:contact@synk.app" className="text-white/50 underline">
+                contact@synk.app
+              </a>
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
