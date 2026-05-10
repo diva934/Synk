@@ -60,6 +60,7 @@ export default function AgeGate({ onVerified, onRejected }: Props) {
   const streamRef = useRef<MediaStream | null>(null);
   const [stage, setStage] = useState<Stage>("loading");
   const [progress, setProgress] = useState(0);
+  const [secondsLeft, setSecondsLeft] = useState(3);
 
   // ── Phase 1 : chargement des modèles ────────────────────────────────────
   useEffect(() => {
@@ -176,10 +177,17 @@ export default function AgeGate({ onVerified, onRejected }: Props) {
       }
     }
 
+    // Compte à rebours : 3s total (800ms init + 5×400ms ≈ 2.8s)
+    setSecondsLeft(3);
+    const t1 = setTimeout(() => setSecondsLeft(2), 1000);
+    const t2 = setTimeout(() => setSecondsLeft(1), 2000);
+
     const initDelay = setTimeout(captureFrame, 800);
     return () => {
       cancelled = true;
       clearTimeout(initDelay);
+      clearTimeout(t1);
+      clearTimeout(t2);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage]);
@@ -224,17 +232,20 @@ export default function AgeGate({ onVerified, onRejected }: Props) {
 
           {stage === "scanning" && (
             <>
-              {/* Viseur */}
+              {/* Ovale visage centré */}
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                <div className="relative h-36 w-28">
-                  <div className="absolute left-0 top-0 h-6 w-6 rounded-tl border-l-2 border-t-2 border-[#2d6ade]" />
-                  <div className="absolute right-0 top-0 h-6 w-6 rounded-tr border-r-2 border-t-2 border-[#2d6ade]" />
-                  <div className="absolute bottom-0 left-0 h-6 w-6 rounded-bl border-b-2 border-l-2 border-[#2d6ade]" />
-                  <div className="absolute bottom-0 right-0 h-6 w-6 rounded-br border-b-2 border-r-2 border-[#2d6ade]" />
-                </div>
+                <div
+                  className="border-2 border-[#2d6ade] shadow-[0_0_20px_rgba(45,106,222,0.4)]"
+                  style={{ width: 110, height: 140, borderRadius: "50%", marginTop: "-10%" }}
+                />
               </div>
-              {/* Barre de progression */}
-              <div className="absolute bottom-3 left-3 right-3">
+              {/* Compte à rebours + barre */}
+              <div className="absolute bottom-3 left-3 right-3 flex flex-col gap-1.5">
+                <div className="flex justify-end">
+                  <span className="text-xs font-bold text-white/60">
+                    {secondsLeft}s
+                  </span>
+                </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-white/10">
                   <div
                     className="h-full rounded-full bg-[#2d6ade] transition-all duration-300"
