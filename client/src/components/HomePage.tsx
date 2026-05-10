@@ -1239,7 +1239,7 @@ function GenderSheet({
         </div>
 
         {/* Actions */}
-        <div className="px-5 pb-8 pt-3 border-t border-white/8">
+        <div className="px-5 pb-8 pt-3">
           <button
             type="button"
             onClick={onStart}
