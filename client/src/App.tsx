@@ -221,19 +221,23 @@ export default function App() {
   };
 
   const handleStart = async (prefs: MediaPreferences) => {
-    // Stocker les prefs et afficher AgeGate — la mise en relation se fait après vérification
     if (session) {
       setMatchingPrefs(prefs.matching);
       localStorage.setItem(`randomchat:matching:${session.user.id}`, JSON.stringify(prefs.matching));
     }
+
+    // Si vérifié dans les 24h, bypass direct sans afficher AgeGate
+    const until = localStorage.getItem("synk_age_verified_until");
+    if (until && Date.now() < Number(until)) {
+      void doStartRoom(prefs);
+      return;
+    }
+
+    // Sinon, afficher AgeGate
     setPendingPrefs(prefs);
   };
 
-  const handleAgeVerified = async () => {
-    if (!pendingPrefs) return;
-    const prefs = pendingPrefs;
-    setPendingPrefs(null);
-
+  const doStartRoom = async (prefs: MediaPreferences) => {
     setMediaError(null);
     try {
       localStream?.getTracks().forEach((track) => track.stop());
@@ -245,19 +249,12 @@ export default function App() {
                 ? { width: { ideal: 1280 }, height: { ideal: 720 }, facingMode: "user" }
                 : false,
               audio: prefs.audio
-                ? {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true,
-                  }
+                ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
                 : false,
             })
           : new MediaStream();
 
-      stream.getTracks().forEach((track) => {
-        track.enabled = true;
-      });
-
+      stream.getTracks().forEach((track) => { track.enabled = true; });
       setLocalStream(stream);
       setHomeCameraRequested(stream.getVideoTracks().length > 0);
       setPage("room");
@@ -266,25 +263,26 @@ export default function App() {
       setHomeCameraRequested(false);
       if (err instanceof Error) {
         if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError") {
-          setMediaError(
-            "Accès à la caméra/micro refusé. Autorisez l'accès dans les paramètres du navigateur, puis réessayez."
-          );
+          setMediaError("Accès à la caméra/micro refusé. Autorisez l'accès dans les paramètres du navigateur, puis réessayez.");
         } else if (err.name === "NotFoundError" || err.name === "DevicesNotFoundError") {
           setMediaError("Aucune caméra ou microphone trouvé sur cet appareil.");
         } else if (err.name === "NotReadableError") {
-          setMediaError(
-            "La caméra/micro est déjà utilisé par une autre application. Fermez-la et réessayez."
-          );
+          setMediaError("La caméra/micro est déjà utilisé par une autre application. Fermez-la et réessayez.");
         } else {
-          setMediaError(`Impossible d'accéder aux médias : ${err.message}`);
+          setMediaError(`Impossible d'accéder aux médias : ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     }
   };
 
-  const handleAgeRejected = (_reason: string) => {
+  const handleAgeVerified = () => {
+    const prefs = pendingPrefs;
     setPendingPrefs(null);
-    // AgeGate affiche son propre écran de blocage — rien à faire ici
+    if (prefs) void doStartRoom(prefs);
+  };
+
+  const handleAgeRejected = (_reason: string) => {
+    // AgeGate garde l'écran de blocage affiché — on ne ferme pas
   };
 
   const handlePrepareHomeCamera = async () => {
